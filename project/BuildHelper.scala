@@ -30,9 +30,9 @@ object BuildHelper {
   )
 
   val buildInfoSettings = Seq(
-    buildInfoKeys := Seq[BuildInfoKey](name, version, scalaVersion, sbtVersion, isSnapshot),
+    buildInfoKeys    := Seq[BuildInfoKey](name, version, scalaVersion, sbtVersion, isSnapshot),
     buildInfoPackage := "zio",
-    buildInfoObject := "BuildInfo"
+    buildInfoObject  := "BuildInfo"
   )
 
   private val optimizerOptions = Seq("-opt:l:inline", "-opt-inline-from:zio.internal.**")
@@ -71,12 +71,13 @@ object BuildHelper {
     }
 
   val stdSettings = Seq(
-    scalacOptions := stdOptions,
-    crossScalaVersions := Seq("2.13.1", "2.12.10", "2.11.12"),
+    scalacOptions             := stdOptions,
+    crossScalaVersions        := Seq("2.13.1", "2.12.11"),
     scalaVersion in ThisBuild := crossScalaVersions.value.head,
-    scalacOptions := stdOptions ++ extraOptions(scalaVersion.value),
+    scalacOptions             := stdOptions ++ extraOptions(scalaVersion.value),
     libraryDependencies ++= Seq(
-      compilerPlugin("com.github.ghik" %% "silencer-plugin" % "1.4.4" cross CrossVersion.full)
+      compilerPlugin("com.github.ghik" %% "silencer-plugin" % "1.6.0" cross CrossVersion.full),
+      "com.github.ghik" %% "silencer-lib" % "1.6.0" % Provided cross CrossVersion.full
     ),
     parallelExecution in Test := true,
     incOptions ~= (_.withLogRecompileOnMacro(false)),
