@@ -1,5 +1,24 @@
 import BuildHelper._
 
+inThisBuild(
+  List(
+    organization := "info.senia",
+    homepage := Some(url("https://github.com/senia-psm/zio-test-akka-http")),
+    licenses := List("Apache-2.0" -> url("http://www.apache.org/licenses/LICENSE-2.0")),
+    developers := List(
+      Developer(
+        "senia",
+        "Simon Popugaev",
+        "seniapsm@gmail.com",
+        url("https://github.com/afsaltha://github.com/senia-psm")
+      )
+    ),
+    scmInfo := Some(
+      ScmInfo(url("https://github.com/senia-psm/zio-test-akka-http"), "scm:git:git@github.com:senia-psm/zio-test-akka-http.git")
+    )
+  )
+)
+
 ThisBuild / publishTo := sonatypePublishToBundle.value
 
 addCommandAlias("fmt", "all scalafmtSbt scalafmt test:scalafmt")
