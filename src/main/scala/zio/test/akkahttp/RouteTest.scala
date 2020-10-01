@@ -21,33 +21,33 @@ import scala.reflect.ClassTag
 
 trait RouteTest extends ExposedRouteTest with MarshallingTestUtils with RequestBuilding {
 
-  def handled(assertion: Assertion[RouteTestResult.Completed]): Assertion[RouteTestResult] =
-    Assertion.assertionRec("handled")(param(assertion))(assertion) {
-      case complete: RouteTestResult.Completed => Some(complete)
-      case _                                   => None
+  def handled(assertion: AssertionM[RouteTestResult.Completed]): AssertionM[RouteTestResult] =
+    AssertionM.assertionRecM("handled")(param(assertion))(assertion) {
+      case complete: RouteTestResult.Completed => ZIO.some(complete)
+      case _                                   => ZIO.none
     }
 
-  def response(assertion: Assertion[HttpResponse]): Assertion[RouteTestResult.Completed] =
-    Assertion.assertionRecM("response")(param(assertion))(assertion) {
+  def response(assertion: AssertionM[HttpResponse]): AssertionM[RouteTestResult.Completed] =
+    AssertionM.assertionRecM("response")(param(assertion))(assertion) {
       _.response.fold(_ => None, Some(_))
     }
 
-  def responseEntity(assertion: Assertion[HttpEntity]): Assertion[RouteTestResult.Completed] =
-    Assertion.assertionRecM("responseEntity")(param(assertion))(assertion) {
+  def responseEntity(assertion: AssertionM[HttpEntity]): AssertionM[RouteTestResult.Completed] =
+    AssertionM.assertionRecM("responseEntity")(param(assertion))(assertion) {
       _.freshEntity.fold(_ => None, Some(_))
     }
 
   def chunks(
-      assertion: Assertion[Option[immutable.Seq[HttpEntity.ChunkStreamPart]]]
-    ): Assertion[RouteTestResult.Completed] =
-    Assertion.assertionRecM("chunks")(param(assertion))(assertion) {
+      assertion: AssertionM[Option[immutable.Seq[HttpEntity.ChunkStreamPart]]]
+    ): AssertionM[RouteTestResult.Completed] =
+    AssertionM.assertionRecM("chunks")(param(assertion))(assertion) {
       _.chunks.fold(_ => None, Some(_))
     }
 
   def entityAs[T : FromEntityUnmarshaller : ClassTag](
-      assertion: Assertion[Either[Throwable, T]]
-    ): Assertion[RouteTestResult.Completed] =
-    Assertion.assertionRecM(s"entityAs[${implicitly[ClassTag[T]]}]")(param(assertion))(assertion) { c =>
+      assertion: AssertionM[Either[Throwable, T]]
+    ): AssertionM[RouteTestResult.Completed] =
+    AssertionM.assertionRecM(s"entityAs[${implicitly[ClassTag[T]]}]")(param(assertion))(assertion) { c =>
       implicit val mat: Materializer = c.environment.get[Materializer]
       c.freshEntity
         .flatMap(entity => ZIO.fromFuture(implicit ec => Unmarshal(entity).to[T]).either)
@@ -55,9 +55,9 @@ trait RouteTest extends ExposedRouteTest with MarshallingTestUtils with RequestB
     }
 
   def responseAs[T : FromResponseUnmarshaller : ClassTag](
-      assertion: Assertion[Either[Throwable, T]]
-    ): Assertion[RouteTestResult.Completed] =
-    Assertion.assertionRecM(s"responseAs[${implicitly[ClassTag[T]]}]")(param(assertion))(assertion) { c =>
+      assertion: AssertionM[Either[Throwable, T]]
+    ): AssertionM[RouteTestResult.Completed] =
+    AssertionM.assertionRecM(s"responseAs[${implicitly[ClassTag[T]]}]")(param(assertion))(assertion) { c =>
       implicit val mat: Materializer = c.environment.get[Materializer]
       c.response
         .flatMap(response => ZIO.fromFuture(implicit ec => Unmarshal(response).to[T]).either)
@@ -153,7 +153,7 @@ object RouteTest {
   case class Config(
       timeout: Duration = 15.seconds,
       unmarshalTimeout: Duration = 1.second,
-      marshallingTimeout: Duration.Finite = Duration.Finite(1.second.toNanos),
+      marshallingTimeout: Duration = Duration.Finite(1.second.toNanos),
       routeTestTimeout: Duration = 1.second,
       defaultHost: DefaultHostInfo = DefaultHostInfo(Host("example.com"), securedConnection = false))
 

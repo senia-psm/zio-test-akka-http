@@ -4,6 +4,8 @@
 
 package zio.test.akkahttp
 
+import java.util.concurrent.TimeUnit
+
 import akka.http.scaladsl.marshalling._
 import akka.http.scaladsl.model.headers.Accept
 import akka.http.scaladsl.model.{HttpEntity, HttpRequest, HttpResponse, MediaRange}
@@ -12,7 +14,9 @@ import akka.stream.Materializer
 import zio.clock.Clock
 import RouteTest.{Environment, Mat, RouteTestConfig}
 import zio.{RIO, ZIO}
+import zio.duration._
 
+import scala.concurrent.duration.FiniteDuration
 import scala.concurrent.{ExecutionContext, Future}
 
 trait MarshallingTestUtils {
@@ -38,7 +42,9 @@ trait MarshallingTestUtils {
       config <- ZIO.access[RouteTestConfig](_.get)
       marshallingTimeout = config.marshallingTimeout
       res <- fromFutureWithMarshalingTimeout({ implicit ec =>
-              Marshal(value).to[HttpEntity].flatMap(_.toStrict(marshallingTimeout.asScala)(mat))
+              Marshal(value)
+                .to[HttpEntity]
+                .flatMap(_.toStrict(FiniteDuration(marshallingTimeout.toNanos, TimeUnit.NANOSECONDS))(mat))
             }, 2)
     } yield res
 

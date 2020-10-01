@@ -3,8 +3,8 @@ import BuildHelper._
 inThisBuild(
   List(
     organization := "info.senia",
-    homepage := Some(url("https://github.com/senia-psm/zio-test-akka-http")),
-    licenses := List("Apache-2.0" -> url("http://www.apache.org/licenses/LICENSE-2.0")),
+    homepage     := Some(url("https://github.com/senia-psm/zio-test-akka-http")),
+    licenses     := List("Apache-2.0" -> url("http://www.apache.org/licenses/LICENSE-2.0")),
     developers := List(
       Developer(
         "senia",
@@ -14,7 +14,10 @@ inThisBuild(
       )
     ),
     scmInfo := Some(
-      ScmInfo(url("https://github.com/senia-psm/zio-test-akka-http"), "scm:git:git@github.com:senia-psm/zio-test-akka-http.git")
+      ScmInfo(
+        url("https://github.com/senia-psm/zio-test-akka-http"),
+        "scm:git:git@github.com:senia-psm/zio-test-akka-http.git"
+      )
     )
   )
 )
@@ -24,9 +27,9 @@ ThisBuild / publishTo := sonatypePublishToBundle.value
 addCommandAlias("fmt", "all scalafmtSbt scalafmt test:scalafmt")
 addCommandAlias("check", "all scalafmtSbtCheck scalafmtCheck test:scalafmtCheck")
 
-lazy val zioVersion      = "1.0.0-RC18-2"
-lazy val akkaVersion     = "2.6.4"
-lazy val akkaHttpVersion = "10.1.11"
+lazy val zioVersion      = "1.0.1"
+lazy val akkaVersion     = "2.6.9"
+lazy val akkaHttpVersion = "10.2.0"
 
 lazy val zioTestAkkaHttp =
   Project("zio-test-akka-http", file("."))

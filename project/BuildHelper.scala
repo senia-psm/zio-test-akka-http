@@ -72,12 +72,12 @@ object BuildHelper {
 
   val stdSettings = Seq(
     scalacOptions             := stdOptions,
-    crossScalaVersions        := Seq("2.13.1", "2.12.11"),
+    crossScalaVersions        := Seq("2.13.3", "2.12.12"),
     scalaVersion in ThisBuild := crossScalaVersions.value.head,
     scalacOptions             := stdOptions ++ extraOptions(scalaVersion.value),
     libraryDependencies ++= Seq(
-      compilerPlugin("com.github.ghik" %% "silencer-plugin" % "1.6.0" cross CrossVersion.full),
-      "com.github.ghik" %% "silencer-lib" % "1.6.0" % Provided cross CrossVersion.full
+      compilerPlugin("com.github.ghik" %% "silencer-plugin" % "1.7.1" cross CrossVersion.full),
+      "com.github.ghik" %% "silencer-lib" % "1.7.1" % Provided cross CrossVersion.full
     ),
     parallelExecution in Test := true,
     incOptions ~= (_.withLogRecompileOnMacro(false)),

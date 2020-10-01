@@ -12,10 +12,11 @@ import akka.testkit.TestProbe
 import akka.util.Timeout
 import zio.ZIO
 import zio.blocking.effectBlocking
-import zio.duration._
 import zio.test.Assertion._
 import zio.test._
 import zio.test.akkahttp.assertions._
+
+import scala.concurrent.duration.DurationInt
 
 object RouteDefaultRunnableSpec extends DefaultRunnableSpec {
   def spec =
@@ -63,7 +64,7 @@ object RouteDefaultRunnableSpec extends DefaultRunnableSpec {
           resultFiber <- {
             implicit def serviceRef: ActorRef = service.ref
 
-            implicit val askTimeout: Timeout = Duration.Finite(1.second.toNanos).asScala
+            implicit val askTimeout: Timeout = 1.second
 
             Get() ~> pinkHeader ~> {
               respondWithHeader(pinkHeader) {

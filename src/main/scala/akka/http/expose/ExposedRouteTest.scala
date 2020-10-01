@@ -4,7 +4,7 @@ import akka.actor.ActorSystem
 import akka.http.scaladsl.model.HttpRequest
 import akka.http.scaladsl.model.headers.`Sec-WebSocket-Protocol`
 import akka.http.scaladsl.server._
-import akka.http.scaladsl.settings.RoutingSettings
+import akka.http.scaladsl.settings.{ParserSettings, RoutingSettings}
 import akka.stream.Materializer
 import zio.test.Assertion
 import zio.test.Assertion._
@@ -39,6 +39,7 @@ trait ExposedRouteTest {
         implicit val executionContext: ExecutionContextExecutor = system.classicSystem.dispatcher
         implicit val materializer: Materializer                 = mat
         val routingSettings                                     = RoutingSettings(system)
+        val parserSettings                                      = ParserSettings(system)
         val routingLog                                          = RoutingLog(system.classicSystem.log)
 
         val effectiveRequest =
@@ -46,7 +47,12 @@ trait ExposedRouteTest {
             securedConnection = config.defaultHost.securedConnection,
             defaultHostHeader = config.defaultHost.host
           )
-        val ctx = new RequestContextImpl(effectiveRequest, routingLog.requestLog(effectiveRequest), routingSettings)
+        val ctx = new RequestContextImpl(
+          effectiveRequest,
+          routingLog.requestLog(effectiveRequest),
+          routingSettings,
+          parserSettings
+        )
 
         val sealedExceptionHandler = ExceptionHandler.default(implicitly[RoutingSettings])
 
