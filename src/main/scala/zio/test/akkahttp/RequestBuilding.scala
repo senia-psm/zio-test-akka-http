@@ -16,20 +16,15 @@ trait RequestBuilding {
   type EIO[+T] = RIO[Clock with Has[RouteTest.Config], T]
 
   class RequestBuilder(val method: HttpMethod) {
-    def apply(): HttpRequest =
-      apply("/")
+    def apply(): HttpRequest = apply("/")
 
-    def apply(uri: String): HttpRequest =
-      apply(uri, HttpEntity.Empty)
+    def apply(uri: String): HttpRequest = apply(uri, HttpEntity.Empty)
 
-    def apply(uri: String, entity: RequestEntity): HttpRequest =
-      apply(Uri(uri), entity)
+    def apply(uri: String, entity: RequestEntity): HttpRequest = apply(Uri(uri), entity)
 
-    def apply(uri: Uri): HttpRequest =
-      apply(uri, HttpEntity.Empty)
+    def apply(uri: Uri): HttpRequest = apply(uri, HttpEntity.Empty)
 
-    def apply(uri: Uri, entity: RequestEntity): HttpRequest =
-      HttpRequest(method, uri, Nil, entity)
+    def apply(uri: Uri, entity: RequestEntity): HttpRequest = HttpRequest(method, uri, Nil, entity)
 
     def apply[T](uri: String, content: T)(implicit m: ToEntityMarshaller[T]): EIO[HttpRequest] =
       apply(Uri(uri), content)
@@ -69,11 +64,9 @@ trait RequestBuilding {
   def removeHeader(headerName: String): RequestTransformer =
     _ mapHeaders (_ filterNot (_.name equalsIgnoreCase headerName))
 
-  def removeHeader[T <: HttpHeader : ClassTag]: RequestTransformer =
-    removeHeader(implicitly[ClassTag[T]].runtimeClass)
+  def removeHeader[T <: HttpHeader : ClassTag]: RequestTransformer = removeHeader(implicitly[ClassTag[T]].runtimeClass)
 
-  def removeHeader(clazz: Class[_]): RequestTransformer =
-    _ mapHeaders (_ filterNot clazz.isInstance)
+  def removeHeader(clazz: Class[_]): RequestTransformer = _ mapHeaders (_ filterNot clazz.isInstance)
 
   def removeHeaders(names: String*): RequestTransformer =
     _ mapHeaders (_ filterNot (header => names exists (_ equalsIgnoreCase header.name)))

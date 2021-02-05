@@ -34,9 +34,9 @@ object RouteTestResult {
         timeout <- ZIO.access[RouteTestConfig](_.get.timeout)
         mat     <- ZIO.access[Has[Materializer]](_.get)
         res <- ZIO
-                .fromFuture(_ => data.limit(100000).runWith(Sink.seq)(mat))
-                .orDie
-                .timeoutFail(TimeoutError)(timeout)
+                 .fromFuture(_ => data.limit(100000).runWith(Sink.seq)(mat))
+                 .orDie
+                 .timeoutFail(TimeoutError)(timeout)
 
       } yield res
 
@@ -56,10 +56,11 @@ object RouteTestResult {
           awaitAllElements(data).memoize.map(_.map(dataChunks => HttpEntity.Chunked(contentType, Source(dataChunks))))
       }
 
-    private def getChunks(entity: HttpEntity) = entity match {
-      case HttpEntity.Chunked(_, chunks) => awaitAllElements(chunks).map(Some(_))
-      case _                             => ZIO.succeed(None)
-    }
+    private def getChunks(entity: HttpEntity) =
+      entity match {
+        case HttpEntity.Chunked(_, chunks) => awaitAllElements(chunks).map(Some(_))
+        case _                             => ZIO.succeed(None)
+      }
 
     def make(response: HttpResponse): URIO[Environment, Completed] =
       for {

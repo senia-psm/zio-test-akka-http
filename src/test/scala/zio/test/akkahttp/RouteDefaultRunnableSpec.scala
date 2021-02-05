@@ -73,9 +73,9 @@ object RouteDefaultRunnableSpec extends DefaultRunnableSpec {
             }
           }.fork
           _ <- effectBlocking {
-                handler.expectMsg(Command)
-                handler.reply("abc")
-              }
+                 handler.expectMsg(Command)
+                 handler.reply("abc")
+               }
           res <- resultFiber.join
         } yield res
 
