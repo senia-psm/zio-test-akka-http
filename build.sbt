@@ -38,7 +38,7 @@ lazy val zioTestAkkaHttp =
       libraryDependencies ++= Seq(
         "dev.zio"           %% "zio"          % zioVersion,
         "dev.zio"           %% "zio-test"     % zioVersion,
-        "dev.zio"           %% "zio-test-sbt" % zioVersion % Test,
+        "dev.zio"           %% "zio-test-sbt" % zioVersion  % Test,
         "com.typesafe.akka" %% "akka-http"    % akkaHttpVersion,
         "com.typesafe.akka" %% "akka-stream"  % akkaVersion,
         "com.typesafe.akka" %% "akka-actor"   % akkaVersion,

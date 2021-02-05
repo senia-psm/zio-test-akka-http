@@ -29,11 +29,11 @@ trait MarshallingTestUtils {
       config <- ZIO.access[RouteTestConfig](_.get)
       marshallingTimeout = config.marshallingTimeout
       res <- ZIO
-              .fromFuture(eff)
-              .timeoutFail(
-                new RuntimeException(s"Can't get result within marshallingTimeout $marshallingTimeout")
-              )(marshallingTimeout * factor)
-              .orDie
+               .fromFuture(eff)
+               .timeoutFail(
+                 new RuntimeException(s"Can't get result within marshallingTimeout $marshallingTimeout")
+               )(marshallingTimeout * factor)
+               .orDie
     } yield res
 
   def marshal[T: ToEntityMarshaller](value: T): RIO[Environment, HttpEntity.Strict] =
@@ -41,11 +41,14 @@ trait MarshallingTestUtils {
       mat    <- ZIO.access[Mat](_.get)
       config <- ZIO.access[RouteTestConfig](_.get)
       marshallingTimeout = config.marshallingTimeout
-      res <- fromFutureWithMarshalingTimeout({ implicit ec =>
-              Marshal(value)
-                .to[HttpEntity]
-                .flatMap(_.toStrict(FiniteDuration(marshallingTimeout.toNanos, TimeUnit.NANOSECONDS))(mat))
-            }, 2)
+      res <- fromFutureWithMarshalingTimeout(
+               { implicit ec =>
+                 Marshal(value)
+                   .to[HttpEntity]
+                   .flatMap(_.toStrict(FiniteDuration(marshallingTimeout.toNanos, TimeUnit.NANOSECONDS))(mat))
+               },
+               2
+             )
     } yield res
 
   def marshalToResponseForRequestAccepting[T: ToResponseMarshaller](
@@ -64,8 +67,8 @@ trait MarshallingTestUtils {
     for {
       mat <- ZIO.access[Mat](_.get)
       res <- fromFutureWithMarshalingTimeout { implicit ec =>
-              implicit val materializer: Materializer = mat
-              Unmarshal(entity).to[T]
-            }
+               implicit val materializer: Materializer = mat
+               Unmarshal(entity).to[T]
+             }
     } yield res
 }
