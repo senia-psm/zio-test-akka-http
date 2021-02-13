@@ -129,6 +129,8 @@ There are several assertions available:
 - `rejection`
 - `isWebSocketUpgrade`
 
+There should be an assertion for every [inspector from original Akka-HTTP Route TestKit](https://doc.akka.io/docs/akka-http/current/routing-dsl/testkit.html#table-of-inspectors). If you can't find an assertion for existing inspector please open an issue.
+
 Note that assertions are lazy on response fetching - you can use assertions for status code and headers even if route returns an infinite body:
 
 Assertions are incompatible with `assert` - use `assertM` instead.
