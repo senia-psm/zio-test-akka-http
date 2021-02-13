@@ -12,7 +12,7 @@ object BuildHelper {
     "-encoding",
     "UTF-8",
     "-feature",
-    "-unchecked"
+    "-unchecked",
   )
 
   private val std2xOptions = Seq(
@@ -26,13 +26,13 @@ object BuildHelper {
     "-Xlint:_,-type-parameter-shadow",
     "-Ywarn-numeric-widen",
     "-Ywarn-value-discard",
-    "-deprecation:false"
+    "-deprecation:false",
   )
 
   val buildInfoSettings = Seq(
     buildInfoKeys    := Seq[BuildInfoKey](name, version, scalaVersion, sbtVersion, isSnapshot),
     buildInfoPackage := "zio",
-    buildInfoObject  := "BuildInfo"
+    buildInfoObject  := "BuildInfo",
   )
 
   private val optimizerOptions = Seq("-opt:l:inline", "-opt-inline-from:zio.internal.**")
@@ -54,7 +54,7 @@ object BuildHelper {
           "-Ywarn-inaccessible",
           "-Ywarn-infer-any",
           "-Ywarn-nullary-override",
-          "-Ywarn-nullary-unit"
+          "-Ywarn-nullary-unit",
         ) ++ std2xOptions ++ optimizerOptions
       case Some((2, 11)) =>
         Seq(
@@ -65,7 +65,7 @@ object BuildHelper {
           "-Ywarn-nullary-override",
           "-Ywarn-nullary-unit",
           "-Xexperimental",
-          "-Ywarn-unused-import"
+          "-Ywarn-unused-import",
         ) ++ std2xOptions
       case _ => Seq.empty
     }
@@ -77,11 +77,11 @@ object BuildHelper {
     scalacOptions             := stdOptions ++ extraOptions(scalaVersion.value),
     libraryDependencies ++= Seq(
       compilerPlugin("com.github.ghik" %% "silencer-plugin" % "1.7.2" cross CrossVersion.full),
-      "com.github.ghik" %% "silencer-lib" % "1.7.2" % Provided cross CrossVersion.full
+      "com.github.ghik" %% "silencer-lib" % "1.7.2" % Provided cross CrossVersion.full,
     ),
     parallelExecution in Test := true,
     incOptions ~= (_.withLogRecompileOnMacro(false)),
     autoAPIMappings := true,
-    unusedCompileDependenciesFilter -= moduleFilter("org.scala-js", "scalajs-library")
+    unusedCompileDependenciesFilter -= moduleFilter("org.scala-js", "scalajs-library"),
   )
 }

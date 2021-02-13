@@ -38,14 +38,14 @@ trait RouteTest extends ExposedRouteTest with MarshallingTestUtils with RequestB
     }
 
   def chunks(
-      assertion: AssertionM[Option[immutable.Seq[HttpEntity.ChunkStreamPart]]]
+      assertion: AssertionM[Option[immutable.Seq[HttpEntity.ChunkStreamPart]]],
     ): AssertionM[RouteTestResult.Completed] =
     AssertionM.assertionRecM("chunks")(param(assertion))(assertion) {
       _.chunks.fold(_ => None, Some(_))
     }
 
   def entityAs[T : FromEntityUnmarshaller : ClassTag](
-      assertion: AssertionM[Either[Throwable, T]]
+      assertion: AssertionM[Either[Throwable, T]],
     ): AssertionM[RouteTestResult.Completed] =
     AssertionM.assertionRecM(s"entityAs[${implicitly[ClassTag[T]]}]")(param(assertion))(assertion) { c =>
       implicit val mat: Materializer = c.environment.get[Materializer]
@@ -55,7 +55,7 @@ trait RouteTest extends ExposedRouteTest with MarshallingTestUtils with RequestB
     }
 
   def responseAs[T : FromResponseUnmarshaller : ClassTag](
-      assertion: AssertionM[Either[Throwable, T]]
+      assertion: AssertionM[Either[Throwable, T]],
     ): AssertionM[RouteTestResult.Completed] =
     AssertionM.assertionRecM(s"responseAs[${implicitly[ClassTag[T]]}]")(param(assertion))(assertion) { c =>
       implicit val mat: Materializer = c.environment.get[Materializer]
@@ -77,7 +77,7 @@ trait RouteTest extends ExposedRouteTest with MarshallingTestUtils with RequestB
     Assertion.assertionRec("headers")(param(assertion))(assertion)(c => Some(c.rawResponse.headers))
 
   def header[T >: Null <: HttpHeader : ClassTag](
-      assertion: Assertion[Option[T]]
+      assertion: Assertion[Option[T]],
     ): Assertion[RouteTestResult.Completed] =
     Assertion.assertionRec(s"header[{implicitly[ClassTag[T]]}]")(param(assertion))(assertion) { c =>
       Some(c.rawResponse.header[T])

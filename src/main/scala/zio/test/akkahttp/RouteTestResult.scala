@@ -59,7 +59,7 @@ object RouteTestResult {
     private def getChunks(entity: HttpEntity) =
       entity match {
         case HttpEntity.Chunked(_, chunks) => awaitAllElements(chunks).map(Some(_))
-        case _                             => ZIO.succeed(None)
+        case _                             => ZIO.none
       }
 
     def make(response: HttpResponse): URIO[Environment, Completed] =
@@ -72,7 +72,7 @@ object RouteTestResult {
         environment,
         freshEntity.map(response.withEntity),
         freshEntity,
-        freshEntity.flatMap(getChunks).provide(environment)
+        freshEntity.flatMap(getChunks).provide(environment),
       )
   }
 }

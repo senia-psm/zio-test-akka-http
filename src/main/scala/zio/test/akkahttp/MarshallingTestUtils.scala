@@ -23,7 +23,7 @@ trait MarshallingTestUtils {
 
   private def fromFutureWithMarshalingTimeout[A](
       eff: ExecutionContext => Future[A],
-      factor: Double = 1
+      factor: Double = 1,
     ): ZIO[Clock with RouteTestConfig, Throwable, A] =
     for {
       config <- ZIO.access[RouteTestConfig](_.get)
@@ -31,7 +31,7 @@ trait MarshallingTestUtils {
       res <- ZIO
                .fromFuture(eff)
                .timeoutFail(
-                 new RuntimeException(s"Can't get result within marshallingTimeout $marshallingTimeout")
+                 new RuntimeException(s"Can't get result within marshallingTimeout $marshallingTimeout"),
                )(marshallingTimeout * factor)
                .orDie
     } yield res
@@ -47,19 +47,19 @@ trait MarshallingTestUtils {
                    .to[HttpEntity]
                    .flatMap(_.toStrict(FiniteDuration(marshallingTimeout.toNanos, TimeUnit.NANOSECONDS))(mat))
                },
-               2
+               2,
              )
     } yield res
 
   def marshalToResponseForRequestAccepting[T: ToResponseMarshaller](
       value: T,
-      mediaRanges: MediaRange*
+      mediaRanges: MediaRange*,
     ): RIO[Clock with RouteTestConfig, HttpResponse] =
     marshalToResponse(value, HttpRequest(headers = Accept(mediaRanges.toList) :: Nil))
 
   def marshalToResponse[T: ToResponseMarshaller](
       value: T,
-      request: HttpRequest = HttpRequest()
+      request: HttpRequest = HttpRequest(),
     ): RIO[Clock with RouteTestConfig, HttpResponse] =
     fromFutureWithMarshalingTimeout(implicit ec => Marshal(value).toResponseFor(request))
 

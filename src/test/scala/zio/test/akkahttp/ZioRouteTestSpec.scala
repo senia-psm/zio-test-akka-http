@@ -8,8 +8,9 @@ import akka.http.scaladsl.model.{ContentTypes, HttpEntity, HttpResponse}
 import akka.http.scaladsl.server.Directives.{complete, get, put, respondWithHeader}
 import akka.http.scaladsl.server.MethodRejection
 import akka.pattern.ask
+import akka.stream.scaladsl.Source
 import akka.testkit.TestProbe
-import akka.util.Timeout
+import akka.util.{ByteString, Timeout}
 import zio.ZIO
 import zio.blocking.effectBlocking
 import zio.test.Assertion._
@@ -24,8 +25,8 @@ object ZioRouteTestSpec extends DefaultAkkaRunnableSpec {
       testM("the most simple and direct route test") {
         assertM(Get() ~> complete(HttpResponse()))(
           handled(
-            response(equalTo(HttpResponse()))
-          )
+            response(equalTo(HttpResponse())),
+          ),
         )
       },
       testM("a test using a directive and some checks") {
@@ -40,8 +41,8 @@ object ZioRouteTestSpec extends DefaultAkkaRunnableSpec {
           handled(
             status(equalTo(OK)) &&
               responseEntity(equalTo(HttpEntity(ContentTypes.`text/plain(UTF-8)`, "abc"))) &&
-              header("Fancy", isSome(equalTo(pinkHeader)))
-          )
+              header("Fancy", isSome(equalTo(pinkHeader))),
+          ),
         )
       },
       testM("proper rejection collection") {
@@ -82,8 +83,8 @@ object ZioRouteTestSpec extends DefaultAkkaRunnableSpec {
           handled(
             status(equalTo(OK)) &&
               responseEntity(equalTo(HttpEntity(ContentTypes.`text/plain(UTF-8)`, "abc"))) &&
-              header("Fancy", isSome(equalTo(pinkHeader)))
-          )
+              header("Fancy", isSome(equalTo(pinkHeader))),
+          ),
         )
       },
       testM("internal server error") {
@@ -93,8 +94,24 @@ object ZioRouteTestSpec extends DefaultAkkaRunnableSpec {
 
         assertM(Get() ~> route)(
           handled(
-            status(equalTo(InternalServerError))
-          )
+            status(equalTo(InternalServerError)),
+          ),
+        )
+      },
+      testM("infinite response") {
+        val pinkHeader = RawHeader("Fancy", "pink")
+
+        val route = get {
+          respondWithHeader(pinkHeader) {
+            complete(HttpEntity(ContentTypes.`application/octet-stream`, Source.repeat(ByteString("abc"))))
+          }
+        }
+
+        assertM(Get() ~> route)(
+          handled(
+            status(equalTo(OK)) &&
+              header("Fancy", isSome(equalTo(pinkHeader))),
+          ),
         )
       },
     )
