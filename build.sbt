@@ -10,16 +10,16 @@ inThisBuild(
         "senia",
         "Simon Popugaev",
         "seniapsm@gmail.com",
-        url("https://github.com/afsaltha://github.com/senia-psm")
-      )
+        url("https://github.com/afsaltha://github.com/senia-psm"),
+      ),
     ),
     scmInfo := Some(
       ScmInfo(
         url("https://github.com/senia-psm/zio-test-akka-http"),
-        "scm:git:git@github.com:senia-psm/zio-test-akka-http.git"
-      )
-    )
-  )
+        "scm:git:git@github.com:senia-psm/zio-test-akka-http.git",
+      ),
+    ),
+  ),
 )
 
 ThisBuild / publishTo := sonatypePublishToBundle.value
@@ -44,5 +44,5 @@ lazy val zioTestAkkaHttp =
         "com.typesafe.akka" %% "akka-actor"   % akkaVersion,
         "com.typesafe.akka" %% "akka-testkit" % akkaVersion % Test,
       ),
-      testFrameworks := Seq(new TestFramework("zio.test.sbt.ZTestFramework"))
+      testFrameworks := Seq(new TestFramework("zio.test.sbt.ZTestFramework")),
     )

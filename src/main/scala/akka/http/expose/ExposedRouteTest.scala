@@ -22,12 +22,12 @@ trait ExposedRouteTest {
     */
   def expectWebSocketUpgradeWithProtocol(assertion: Assertion[String]): Assertion[RouteTestResult.Completed] =
     (isWebSocketUpgrade && header[`Sec-WebSocket-Protocol`](
-      isSome(hasField("protocols", _.protocols, hasSize[String](equalTo(1)) && hasFirst(assertion)))
+      isSome(hasField("protocols", _.protocols, hasSize[String](equalTo(1)) && hasFirst(assertion))),
     )) ?? "expectWebSocketUpgradeWithProtocol"
 
   protected def executeRequest(
       request: HttpRequest,
-      route: Route
+      route: Route,
     ): URIO[RouteTest.Environment with System, RouteTestResult] =
     for {
       system <- ZIO.access[System](_.get)
@@ -44,13 +44,13 @@ trait ExposedRouteTest {
         val effectiveRequest =
           request.withEffectiveUri(
             securedConnection = config.defaultHost.securedConnection,
-            defaultHostHeader = config.defaultHost.host
+            defaultHostHeader = config.defaultHost.host,
           )
         val ctx = new RequestContextImpl(
           effectiveRequest,
           routingLog.requestLog(effectiveRequest),
           routingSettings,
-          parserSettings
+          parserSettings,
         )
 
         val sealedExceptionHandler = ExceptionHandler.default(implicitly[RoutingSettings])
