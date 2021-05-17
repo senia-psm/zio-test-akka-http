@@ -75,10 +75,6 @@ object BuildHelper {
     crossScalaVersions        := Seq("2.13.5", "2.12.13"),
     scalaVersion in ThisBuild := crossScalaVersions.value.head,
     scalacOptions             := stdOptions ++ extraOptions(scalaVersion.value),
-    libraryDependencies ++= Seq(
-      compilerPlugin("com.github.ghik" %% "silencer-plugin" % "1.7.3" cross CrossVersion.full),
-      "com.github.ghik" %% "silencer-lib" % "1.7.3" % Provided cross CrossVersion.full,
-    ),
     parallelExecution in Test := true,
     incOptions ~= (_.withLogRecompileOnMacro(false)),
     autoAPIMappings := true,
