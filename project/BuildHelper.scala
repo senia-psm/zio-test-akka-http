@@ -72,7 +72,7 @@ object BuildHelper {
 
   val stdSettings = Seq(
     scalacOptions            := stdOptions,
-    crossScalaVersions       := Seq("2.13.6", "2.12.15"),
+    crossScalaVersions       := Seq("2.13.6", "2.12.15", "3.0.0"),
     ThisBuild / scalaVersion := crossScalaVersions.value.head,
     scalacOptions            := stdOptions ++ extraOptions(scalaVersion.value),
     Test / parallelExecution := true,

@@ -22,7 +22,13 @@ trait ExposedRouteTest {
     */
   def expectWebSocketUpgradeWithProtocol(assertion: Assertion[String]): Assertion[RouteTestResult.Completed] =
     (isWebSocketUpgrade && header[`Sec-WebSocket-Protocol`](
-      isSome(hasField("protocols", _.protocols, hasSize[String](equalTo(1)) && hasFirst(assertion))),
+      isSome(
+        hasField(
+          "protocols",
+          (_: `Sec-WebSocket-Protocol`).protocols,
+          hasSize[String](equalTo(1)) && hasFirst(assertion),
+        ),
+      ),
     )) ?? "expectWebSocketUpgradeWithProtocol"
 
   protected def executeRequest(
