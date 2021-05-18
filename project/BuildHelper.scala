@@ -71,11 +71,11 @@ object BuildHelper {
     }
 
   val stdSettings = Seq(
-    scalacOptions             := stdOptions,
-    crossScalaVersions        := Seq("2.13.6", "2.12.14"),
-    scalaVersion in ThisBuild := crossScalaVersions.value.head,
-    scalacOptions             := stdOptions ++ extraOptions(scalaVersion.value),
-    parallelExecution in Test := true,
+    scalacOptions            := stdOptions,
+    crossScalaVersions       := Seq("2.13.6", "2.12.14"),
+    ThisBuild / scalaVersion := crossScalaVersions.value.head,
+    scalacOptions            := stdOptions ++ extraOptions(scalaVersion.value),
+    Test / parallelExecution := true,
     incOptions ~= (_.withLogRecompileOnMacro(false)),
     autoAPIMappings := true,
     unusedCompileDependenciesFilter -= moduleFilter("org.scala-js", "scalajs-library"),
