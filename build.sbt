@@ -36,13 +36,15 @@ lazy val zioTestAkkaHttp =
     .settings(stdSettings)
     .settings(
       libraryDependencies ++= Seq(
-        "dev.zio"           %% "zio"          % zioVersion,
-        "dev.zio"           %% "zio-test"     % zioVersion,
-        "dev.zio"           %% "zio-test-sbt" % zioVersion  % Test,
+        "dev.zio" %% "zio"          % zioVersion,
+        "dev.zio" %% "zio-test"     % zioVersion,
+        "dev.zio" %% "zio-test-sbt" % zioVersion % Test,
+      ),
+      libraryDependencies ++= Seq(
         "com.typesafe.akka" %% "akka-http"    % akkaHttpVersion,
         "com.typesafe.akka" %% "akka-stream"  % akkaVersion,
         "com.typesafe.akka" %% "akka-actor"   % akkaVersion,
         "com.typesafe.akka" %% "akka-testkit" % akkaVersion % Test,
-      ),
+      ).map(_.cross(CrossVersion.for3Use2_13)),
       testFrameworks := Seq(new TestFramework("zio.test.sbt.ZTestFramework")),
     )
