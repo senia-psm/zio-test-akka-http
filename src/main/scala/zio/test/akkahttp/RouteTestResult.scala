@@ -16,7 +16,7 @@ object RouteTestResult {
   type TimeoutError = TimeoutError.type
 
   final case class Rejected(rejections: immutable.Seq[Rejection]) extends RouteTestResult
-  case object Timeout                                             extends RouteTestResult
+  case object Timeout extends RouteTestResult
   final class Completed(
       private[akkahttp] val rawResponse: HttpResponse,
       val environment: Environment,

@@ -17,8 +17,8 @@ import scala.concurrent.ExecutionContextExecutor
 trait ExposedRouteTest {
   this: RouteTest =>
 
-  /** Asserts that the received response is a WebSocket upgrade response and the extracts
-    * the chosen subprotocol and passes it to the handler.
+  /** Asserts that the received response is a WebSocket upgrade response and the extracts the chosen subprotocol and
+    * passes it to the handler.
     */
   def expectWebSocketUpgradeWithProtocol(assertion: Assertion[String]): Assertion[RouteTestResult.Completed] =
     (isWebSocketUpgrade && header[`Sec-WebSocket-Protocol`](

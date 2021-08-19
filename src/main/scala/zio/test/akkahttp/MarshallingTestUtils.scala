@@ -42,11 +42,10 @@ trait MarshallingTestUtils {
       config <- ZIO.access[RouteTestConfig](_.get)
       marshallingTimeout = config.marshallingTimeout
       res <- fromFutureWithMarshalingTimeout(
-               { implicit ec =>
+               implicit ec =>
                  Marshal(value)
                    .to[HttpEntity]
-                   .flatMap(_.toStrict(FiniteDuration(marshallingTimeout.toNanos, TimeUnit.NANOSECONDS))(mat))
-               },
+                   .flatMap(_.toStrict(FiniteDuration(marshallingTimeout.toNanos, TimeUnit.NANOSECONDS))(mat)),
                2,
              )
     } yield res
