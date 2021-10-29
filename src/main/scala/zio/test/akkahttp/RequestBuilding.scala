@@ -47,7 +47,7 @@ trait RequestBuilding {
   val Head    = new RequestBuilder(HEAD)
 
   // TODO: reactivate after HTTP message encoding has been ported
-  //def encode(encoder: Encoder): RequestTransformer = encoder.encode(_, flow)
+  // def encode(encoder: Encoder): RequestTransformer = encoder.encode(_, flow)
 
   def addHeader(header: HttpHeader): RequestTransformer = _.mapHeaders(header +: _)
 
