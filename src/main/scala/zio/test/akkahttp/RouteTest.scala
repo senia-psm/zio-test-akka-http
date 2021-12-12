@@ -8,12 +8,10 @@ import akka.http.scaladsl.server.{Rejection, RequestContext, RouteResult}
 import akka.http.scaladsl.unmarshalling.{FromEntityUnmarshaller, FromResponseUnmarshaller, Unmarshal}
 import akka.stream.Materializer
 import zio._
-import zio.clock.Clock
-import zio.duration._
 import zio.test.Assertion.Render.param
 import zio.test.Assertion._
 import zio.test._
-import zio.test.akkahttp.RouteTest.{Environment, System}
+import zio.test.akkahttp.RouteTest.Environment
 
 import scala.collection.immutable
 import scala.concurrent.Future
@@ -48,7 +46,7 @@ trait RouteTest extends ExposedRouteTest with MarshallingTestUtils with RequestB
       assertion: AssertionM[Either[Throwable, T]],
     ): AssertionM[RouteTestResult.Completed] =
     AssertionM.assertionRecM(s"entityAs[${implicitly[ClassTag[T]]}]")(param(assertion))(assertion) { c =>
-      implicit val mat: Materializer = c.environment.get[Materializer]
+      implicit val mat: Materializer = c.materializer
       c.freshEntity
         .flatMap(entity => ZIO.fromFuture(implicit ec => Unmarshal(entity).to[T]).either)
         .fold(_ => None, Some(_))
@@ -58,7 +56,7 @@ trait RouteTest extends ExposedRouteTest with MarshallingTestUtils with RequestB
       assertion: AssertionM[Either[Throwable, T]],
     ): AssertionM[RouteTestResult.Completed] =
     AssertionM.assertionRecM(s"responseAs[${implicitly[ClassTag[T]]}]")(param(assertion))(assertion) { c =>
-      implicit val mat: Materializer = c.environment.get[Materializer]
+      implicit val mat: Materializer = c.materializer
       c.response
         .flatMap(response => ZIO.fromFuture(implicit ec => Unmarshal(response).to[T]).either)
         .fold(_ => None, Some(_))
@@ -132,21 +130,18 @@ trait RouteTest extends ExposedRouteTest with MarshallingTestUtils with RequestB
   }
 
   implicit class WithRoute(request: HttpRequest) {
-    def ~>(route: RequestContext => Future[RouteResult]): URIO[Environment with System, RouteTestResult] =
+    def ~>(route: RequestContext => Future[RouteResult]): URIO[Environment with ActorSystem, RouteTestResult] =
       executeRequest(request, route)
   }
 
   implicit class WithRouteM[R, E](request: ZIO[R, E, HttpRequest]) {
-    def ~>(route: RequestContext => Future[RouteResult]): ZIO[Environment with System with R, E, RouteTestResult] =
+    def ~>(route: RequestContext => Future[RouteResult]): ZIO[Environment with ActorSystem with R, E, RouteTestResult] =
       request.flatMap(executeRequest(_, route))
   }
 }
 
 object RouteTest {
-  type RouteTestConfig = Has[Config]
-  type System          = Has[ActorSystem]
-  type Mat             = Has[Materializer]
-  type Environment     = Clock with Mat with RouteTestConfig
+  type Environment = Clock with Materializer with RouteTest.Config
 
   case class DefaultHostInfo(host: Host, securedConnection: Boolean)
 
@@ -157,5 +152,5 @@ object RouteTest {
       routeTestTimeout: Duration = 1.second,
       defaultHost: DefaultHostInfo = DefaultHostInfo(Host("example.com"), securedConnection = false))
 
-  val testConfig: ULayer[RouteTestConfig] = ZLayer.succeed(Config())
+  val testConfig: ULayer[RouteTest.Config] = ZLayer.succeed(Config())
 }

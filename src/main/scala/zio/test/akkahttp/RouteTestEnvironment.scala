@@ -1,19 +1,18 @@
 package zio.test.akkahttp
 
 import akka.actor.ActorSystem
-import akka.stream.SystemMaterializer
+import akka.stream.{Materializer, SystemMaterializer}
 import com.typesafe.config.{Config, ConfigFactory}
 import zio._
-import RouteTest.{Mat, RouteTestConfig, System}
 
 object RouteTestEnvironment {
-  lazy val testSystemFromConfig: URLayer[Config, System] =
+  lazy val testSystemFromConfig: URLayer[Config, ActorSystem] =
     ZLayer
-      .fromAcquireRelease(ZIO.access[Config](ActorSystem(actorSystemNameFrom(getClass), _))) { sys =>
+      .fromAcquireRelease(ZIO.serviceWith[Config](conf => ActorSystem(actorSystemNameFrom(getClass), conf))) { sys =>
         ZIO.fromFuture(_ => sys.terminate()).orDie
       }
 
-  lazy val testSystem: ULayer[System] = testConfig >>> testSystemFromConfig
+  lazy val testSystem: ULayer[ActorSystem] = testConfig >>> testSystemFromConfig
 
   private def actorSystemNameFrom(clazz: Class[_]) =
     clazz.getName
@@ -24,16 +23,17 @@ object RouteTestEnvironment {
   def testConfigSource: String = ""
 
   lazy val testConfig: ULayer[Config] =
-    ZLayer.succeedMany {
+    ZLayer.succeed {
       val source = testConfigSource
       val config = if (source.isEmpty) ConfigFactory.empty() else ConfigFactory.parseString(source)
       config.withFallback(ConfigFactory.load())
     }
 
-  lazy val testMaterializer: URLayer[System, Mat] = ZLayer.fromService(SystemMaterializer(_).materializer)
+  lazy val testMaterializer: URLayer[ActorSystem, Materializer] =
+    (SystemMaterializer(_: ActorSystem).materializer).toLayer
 
-  type TestEnvironment = System with Mat with RouteTestConfig
+  type TestEnvironment = ActorSystem with Materializer with RouteTest.Config
 
   lazy val environment: ULayer[TestEnvironment] =
-    testSystem >>> (ZLayer.requires[System] ++ testMaterializer) ++ RouteTest.testConfig
+    testSystem >>> (ZLayer.environment[ActorSystem] ++ testMaterializer) ++ RouteTest.testConfig
 }

@@ -37,14 +37,14 @@ import zio.test.akkahttp.assertions._
 object MySpec extends DefaultRunnableSpec {
   def spec =
     suite("MySpec")(
-      testM("my test") {
+      test("my test") {
         assertM(Get() ~> complete(HttpResponse()))(
           handled(
             response(equalTo(HttpResponse()))
           )
         )
       }
-    ).provideSomeLayerShared[Environment](RouteTestEnvironment.environment)
+    ).provideSomeShared[Environment](RouteTestEnvironment.environment)
 }
 ```
 
@@ -60,7 +60,7 @@ import zio.test.akkahttp.DefaultAkkaRunnableSpec
 object MySpec extends DefaultAkkaRunnableSpec {
   def spec =
     suite("MySpec")(
-      testM("my test") {
+      test("my test") {
         assertM(Get() ~> complete(HttpResponse()))(
           handled(
             response(equalTo(HttpResponse()))
