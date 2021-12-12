@@ -5,7 +5,7 @@ import akka.http.scaladsl.model._
 import akka.http.scaladsl.server.Rejection
 import akka.stream.Materializer
 import zio._
-import RouteTest.{Environment, RouteTestConfig}
+import zio.test.akkahttp.RouteTest.Environment
 
 import scala.collection.immutable
 
@@ -19,7 +19,8 @@ object RouteTestResult {
   case object Timeout extends RouteTestResult
   final class Completed(
       private[akkahttp] val rawResponse: HttpResponse,
-      val environment: Environment,
+      val materializer: Materializer,
+      val config: RouteTest.Config,
       val response: IO[TimeoutError, HttpResponse],
       val freshEntity: IO[TimeoutError, ResponseEntity],
       val chunks: IO[TimeoutError, Option[immutable.Seq[HttpEntity.ChunkStreamPart]]])
@@ -31,8 +32,8 @@ object RouteTestResult {
 
     private def awaitAllElements[T](data: Source[T, _]) =
       for {
-        timeout <- ZIO.access[RouteTestConfig](_.get.timeout)
-        mat     <- ZIO.access[Has[Materializer]](_.get)
+        timeout <- ZIO.serviceWith[RouteTest.Config](_.timeout)
+        mat     <- ZIO.service[Materializer]
         res <- ZIO
                  .fromFuture(_ => data.limit(100000).runWith(Sink.seq)(mat))
                  .orDie
@@ -66,13 +67,14 @@ object RouteTestResult {
       for {
         environment  <- ZIO.environment[Environment]
         freshEntityR <- freshEntityEff(response)
-        freshEntity = freshEntityR.provide(environment)
+        freshEntity = freshEntityR.provideEnvironment(environment)
       } yield new Completed(
         response,
-        environment,
+        environment.get[Materializer],
+        environment.get[RouteTest.Config],
         freshEntity.map(response.withEntity),
         freshEntity,
-        freshEntity.flatMap(getChunks).provide(environment),
+        freshEntity.flatMap(getChunks).provideEnvironment(environment),
       )
   }
 }

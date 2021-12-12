@@ -8,7 +8,6 @@ import akka.http.scaladsl.settings.{ParserSettings, RoutingSettings}
 import akka.stream.Materializer
 import zio.test.Assertion
 import zio.test.Assertion._
-import zio.test.akkahttp.RouteTest.{Mat, RouteTestConfig, System}
 import zio.test.akkahttp.{RouteTest, RouteTestResult}
 import zio.{URIO, ZIO}
 
@@ -34,11 +33,11 @@ trait ExposedRouteTest {
   protected def executeRequest(
       request: HttpRequest,
       route: Route,
-    ): URIO[RouteTest.Environment with System, RouteTestResult] =
+    ): URIO[RouteTest.Environment with ActorSystem, RouteTestResult] =
     for {
-      system <- ZIO.access[System](_.get)
-      config <- ZIO.access[RouteTestConfig](_.get)
-      mat    <- ZIO.access[Mat](_.get)
+      system <- ZIO.service[ActorSystem]
+      config <- ZIO.service[RouteTest.Config]
+      mat    <- ZIO.service[Materializer]
       res <- {
         implicit val actorSystem: ActorSystem                   = system
         implicit val executionContext: ExecutionContextExecutor = system.classicSystem.dispatcher

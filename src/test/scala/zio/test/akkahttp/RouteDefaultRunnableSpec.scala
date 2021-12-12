@@ -1,6 +1,6 @@
 package zio.test.akkahttp
 
-import akka.actor.ActorRef
+import akka.actor.{ActorRef, ActorSystem}
 import akka.http.scaladsl.model.HttpMethods.{GET, PUT}
 import akka.http.scaladsl.model.StatusCodes.{InternalServerError, OK}
 import akka.http.scaladsl.model.headers.RawHeader
@@ -12,7 +12,6 @@ import akka.stream.scaladsl.Source
 import akka.testkit.TestProbe
 import akka.util.{ByteString, Timeout}
 import zio.ZIO
-import zio.blocking.effectBlocking
 import zio.test.Assertion._
 import zio.test._
 import zio.test.akkahttp.assertions._
@@ -22,14 +21,14 @@ import scala.concurrent.duration.DurationInt
 object RouteDefaultRunnableSpec extends DefaultRunnableSpec {
   def spec =
     suite("RouteDefaultRunnableSpec")(
-      testM("the most simple and direct route test") {
+      test("the most simple and direct route test") {
         assertM(Get() ~> complete(HttpResponse()))(
           handled(
             response(equalTo(HttpResponse())),
           ),
         )
       },
-      testM("a test using a directive and some checks") {
+      test("a test using a directive and some checks") {
         val pinkHeader = RawHeader("Fancy", "pink")
         val result = Get() ~> addHeader(pinkHeader) ~> {
           respondWithHeader(pinkHeader) {
@@ -45,7 +44,7 @@ object RouteDefaultRunnableSpec extends DefaultRunnableSpec {
           ),
         )
       },
-      testM("proper rejection collection") {
+      test("proper rejection collection") {
         val result = Post("/abc", "content") ~> {
           (get | put) {
             complete("naah")
@@ -53,13 +52,13 @@ object RouteDefaultRunnableSpec extends DefaultRunnableSpec {
         }
         assertM(result)(rejected(equalTo(List(MethodRejection(GET), MethodRejection(PUT)))))
       },
-      testM("separation of route execution from checking") {
+      test("separation of route execution from checking") {
         val pinkHeader = RawHeader("Fancy", "pink")
 
         case object Command
 
         val result = for {
-          system <- ZIO.access[System](_.get)
+          system <- ZIO.service[ActorSystem]
           service = TestProbe()(system)
           handler = TestProbe()(system)
           resultFiber <- {
@@ -73,7 +72,7 @@ object RouteDefaultRunnableSpec extends DefaultRunnableSpec {
               }
             }
           }.fork
-          _ <- effectBlocking {
+          _ <- ZIO.attemptBlocking {
                  handler.expectMsg(Command)
                  handler.reply("abc")
                }
@@ -88,7 +87,7 @@ object RouteDefaultRunnableSpec extends DefaultRunnableSpec {
           ),
         )
       },
-      testM("internal server error") {
+      test("internal server error") {
         val route = get {
           throw new RuntimeException("BOOM")
         }
@@ -99,7 +98,7 @@ object RouteDefaultRunnableSpec extends DefaultRunnableSpec {
           ),
         )
       },
-      testM("infinite response") {
+      test("infinite response") {
         val pinkHeader = RawHeader("Fancy", "pink")
 
         val route = get {
@@ -115,5 +114,5 @@ object RouteDefaultRunnableSpec extends DefaultRunnableSpec {
           ),
         )
       },
-    ).provideSomeLayerShared[Environment](RouteTestEnvironment.environment)
+    ).provideSomeShared[Environment](RouteTestEnvironment.environment)
 }
