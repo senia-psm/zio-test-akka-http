@@ -1,35 +1,20 @@
 package zio.test.akkahttp
 
-import akka.actor.ActorSystem
-import akka.stream.Materializer
 import zio._
-import zio.test.akkahttp.RouteTest.Config
 import zio.test.{
-  testEnvironment, Annotations, ExecutedSpec, Live, RunnableSpec, Sized, Spec, SuiteConstructor, TestAspect, TestClock,
-  TestConfig, TestConsole, TestConstructor, TestEnvironment, TestExecutor, TestLogger, TestRandom, TestRunner,
-  TestSystem, ZSpec,
+  testEnvironment, ExecutedSpec, RunnableSpec, Spec, SuiteConstructor, TestAspect, TestAspectAtLeastR, TestConstructor,
+  TestEnvironment, TestExecutor, TestLogger, TestRunner, ZSpec,
 }
 
 trait DefaultAkkaRunnableSpec
     extends RunnableSpec[RouteTestEnvironment.TestEnvironment with TestEnvironment, Any]
     with RouteTest {
-  override def aspects: List[TestAspect.WithOut[
-    Nothing,
-    RouteTestEnvironment.TestEnvironment with TestEnvironment,
-    Nothing,
-    Any,
-    ({ type OutEnv[Env] = Env })#OutEnv,
-    ({ type OutErr[Err] = Err })#OutErr,
-  ]] = List(TestAspect.timeoutWarning(60.seconds))
 
-  override def runner: TestRunner[RouteTestEnvironment.TestEnvironment with TestEnvironment, Any] = {
-    // TODO: remove workaround once izumi macros are ported to Scala 3.x
-    val akkaEnv: ULayer[ActorSystem with Materializer with Config] = RouteTestEnvironment.environment
-    val zEnv: ULayer[
-      Annotations with Live with Sized with TestClock with TestConfig with TestConsole with TestRandom with TestSystem with Clock with Console with System with Random,
-    ] = testEnvironment
-    TestRunner(TestExecutor.default(akkaEnv ++ zEnv))
-  }
+  override def aspects: List[TestAspectAtLeastR[RouteTestEnvironment.TestEnvironment with TestEnvironment]] =
+    List(TestAspect.timeoutWarning(60.seconds))
+
+  override def runner: TestRunner[RouteTestEnvironment.TestEnvironment with TestEnvironment, Any] =
+    TestRunner(TestExecutor.default(RouteTestEnvironment.environment ++ testEnvironment))
 
   /** Returns an effect that executes a given spec, producing the results of the execution.
     */
