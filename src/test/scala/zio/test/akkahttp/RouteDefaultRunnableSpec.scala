@@ -11,7 +11,7 @@ import akka.pattern.ask
 import akka.stream.scaladsl.Source
 import akka.testkit.TestProbe
 import akka.util.{ByteString, Timeout}
-import zio.ZIO
+import zio.{Clock, ZIO}
 import zio.test.Assertion._
 import zio.test._
 import zio.test.akkahttp.assertions._
@@ -114,5 +114,5 @@ object RouteDefaultRunnableSpec extends DefaultRunnableSpec {
           ),
         )
       },
-    ).provideSomeShared[Environment](RouteTestEnvironment.environment)
+    ).provideSomeShared[Clock](RouteTestEnvironment.environment)
 }
