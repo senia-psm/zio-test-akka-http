@@ -11,16 +11,16 @@ import akka.pattern.ask
 import akka.stream.scaladsl.Source
 import akka.testkit.TestProbe
 import akka.util.{ByteString, Timeout}
-import zio.{Clock, ZIO}
+import zio.ZIO
 import zio.test.Assertion._
 import zio.test._
 import zio.test.akkahttp.assertions._
 
 import scala.concurrent.duration.DurationInt
 
-object RouteDefaultRunnableSpec extends DefaultRunnableSpec {
+object RouteZIOSpecDefaultSpec extends ZIOSpecDefault {
   def spec =
-    suite("RouteDefaultRunnableSpec")(
+    suite("RouteZIOSpecDefaultSpec")(
       test("the most simple and direct route test") {
         assertM(Get() ~> complete(HttpResponse()))(
           handled(
@@ -114,5 +114,5 @@ object RouteDefaultRunnableSpec extends DefaultRunnableSpec {
           ),
         )
       },
-    ).provideSomeShared[Clock](RouteTestEnvironment.environment)
+    ).provideShared(RouteTestEnvironment.environment)
 }

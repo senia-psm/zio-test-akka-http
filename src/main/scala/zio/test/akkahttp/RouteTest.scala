@@ -141,7 +141,7 @@ trait RouteTest extends ExposedRouteTest with MarshallingTestUtils with RequestB
 }
 
 object RouteTest {
-  type Environment = Clock with Materializer with RouteTest.Config
+  type Environment = Materializer with RouteTest.Config
 
   case class DefaultHostInfo(host: Host, securedConnection: Boolean)
 

@@ -34,7 +34,7 @@ import zio.test._
 import zio.test.akkahttp.RouteTestEnvironment
 import zio.test.akkahttp.assertions._
 
-object MySpec extends DefaultRunnableSpec {
+object MySpec extends ZIOSpecDefault {
   def spec =
     suite("MySpec")(
       test("my test") {
@@ -44,7 +44,7 @@ object MySpec extends DefaultRunnableSpec {
           )
         )
       }
-    ).provideSomeShared[Environment](RouteTestEnvironment.environment)
+    ).provideShared(RouteTestEnvironment.environment)
 }
 ```
 
@@ -55,9 +55,9 @@ import akka.http.scaladsl.server.Directives.complete
 import akka.http.scaladsl.model.HttpResponse
 import zio.test.Assertion._
 import zio.test._
-import zio.test.akkahttp.DefaultAkkaRunnableSpec
+import zio.test.akkahttp.AkkaZIOSpecDefault
 
-object MySpec extends DefaultAkkaRunnableSpec {
+object MySpec extends AkkaZIOSpecDefault {
   def spec =
     suite("MySpec")(
       test("my test") {

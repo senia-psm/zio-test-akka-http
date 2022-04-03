@@ -6,11 +6,11 @@ import com.typesafe.config.{Config, ConfigFactory}
 import zio._
 
 object RouteTestEnvironment {
-  lazy val testSystemFromConfig: URLayer[Config, ActorSystem] =
-    ZLayer
-      .fromAcquireRelease(ZIO.serviceWith[Config](conf => ActorSystem(actorSystemNameFrom(getClass), conf))) { sys =>
-        ZIO.fromFuture(_ => sys.terminate()).orDie
-      }
+  lazy val testSystemFromConfig: URLayer[Config, ActorSystem] = ZLayer.scoped {
+    ZIO.acquireRelease(ZIO.serviceWith[Config](conf => ActorSystem(actorSystemNameFrom(getClass), conf))) { sys =>
+      ZIO.fromFuture(_ => sys.terminate()).orDie
+    }
+  }
 
   lazy val testSystem: ULayer[ActorSystem] = testConfig >>> testSystemFromConfig
 
@@ -30,7 +30,7 @@ object RouteTestEnvironment {
     }
 
   lazy val testMaterializer: URLayer[ActorSystem, Materializer] =
-    (SystemMaterializer(_: ActorSystem).materializer).toLayer
+    ZLayer.fromFunction(SystemMaterializer(_).materializer)
 
   type TestEnvironment = ActorSystem with Materializer with RouteTest.Config
 
