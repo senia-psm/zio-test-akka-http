@@ -17,7 +17,7 @@ import zio.test._
 
 import scala.concurrent.duration.DurationInt
 
-object ZioRouteTestSpec extends DefaultAkkaRunnableSpec {
+object AkkaZIOSpecDefaultSpec extends AkkaZIOSpecDefault {
   def spec =
     suite("ZioRouteTestSpec")(
       test("the most simple and direct route test") {

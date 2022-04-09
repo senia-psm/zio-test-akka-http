@@ -21,7 +21,7 @@ trait MarshallingTestUtils {
   private def fromFutureWithMarshalingTimeout[A](
       eff: ExecutionContext => Future[A],
       factor: Double = 1,
-    ): ZIO[Clock with RouteTest.Config, Throwable, A] =
+    ): ZIO[RouteTest.Config, Throwable, A] =
     for {
       config <- ZIO.service[RouteTest.Config]
       marshallingTimeout = config.marshallingTimeout
@@ -50,13 +50,13 @@ trait MarshallingTestUtils {
   def marshalToResponseForRequestAccepting[T: ToResponseMarshaller](
       value: T,
       mediaRanges: MediaRange*,
-    ): RIO[Clock with RouteTest.Config, HttpResponse] =
+    ): RIO[RouteTest.Config, HttpResponse] =
     marshalToResponse(value, HttpRequest(headers = Accept(mediaRanges.toList) :: Nil))
 
   def marshalToResponse[T: ToResponseMarshaller](
       value: T,
       request: HttpRequest = HttpRequest(),
-    ): RIO[Clock with RouteTest.Config, HttpResponse] =
+    ): RIO[RouteTest.Config, HttpResponse] =
     fromFutureWithMarshalingTimeout(implicit ec => Marshal(value).toResponseFor(request))
 
   def unmarshal[T: FromEntityUnmarshaller](entity: HttpEntity): RIO[Environment, T] =

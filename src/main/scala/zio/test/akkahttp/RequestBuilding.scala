@@ -12,7 +12,7 @@ import scala.reflect.ClassTag
 trait RequestBuilding {
   type RequestTransformer = HttpRequest => HttpRequest
 
-  type EIO[+T] = RIO[Clock with RouteTest.Config, T]
+  type EIO[+T] = RIO[RouteTest.Config, T]
 
   class RequestBuilder(val method: HttpMethod) {
     def apply(): HttpRequest = apply("/")
