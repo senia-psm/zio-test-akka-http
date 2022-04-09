@@ -27,7 +27,7 @@ ThisBuild / publishTo := sonatypePublishToBundle.value
 addCommandAlias("fmt", "all scalafmtSbt scalafmt test:scalafmt")
 addCommandAlias("check", "all scalafmtSbtCheck scalafmtCheck test:scalafmtCheck")
 
-lazy val zioVersion      = "2.0.0-RC3"
+lazy val zioVersion      = "2.0.0-RC5"
 lazy val akkaVersion     = "2.6.19"
 lazy val akkaHttpVersion = "10.2.9"
 
