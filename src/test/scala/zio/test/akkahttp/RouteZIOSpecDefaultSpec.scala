@@ -46,7 +46,7 @@ object RouteZIOSpecDefaultSpec extends ZIOSpecDefault {
       },
       test("proper rejection collection") {
         val result = Post("/abc", "content") ~> {
-          (get | put) {
+          get | put {
             complete("naah")
           }
         }

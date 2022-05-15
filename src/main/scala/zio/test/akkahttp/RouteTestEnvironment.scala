@@ -35,5 +35,5 @@ object RouteTestEnvironment {
   type TestEnvironment = ActorSystem with Materializer with RouteTest.Config
 
   lazy val environment: ULayer[TestEnvironment] =
-    testSystem >>> (ZLayer.environment[ActorSystem] ++ testMaterializer) ++ RouteTest.testConfig
+    testSystem >>> ZLayer.environment[ActorSystem] ++ testMaterializer ++ RouteTest.testConfig
 }

@@ -39,9 +39,9 @@ object BuildHelper {
 
   def extraOptions(scalaVersion: String) =
     CrossVersion.partialVersion(scalaVersion) match {
-      case Some((2, 13)) =>
+      case Some(2, 13) =>
         std2xOptions ++ optimizerOptions
-      case Some((2, 12)) =>
+      case Some(2, 12) =>
         Seq(
           "-opt-warnings",
           "-Ywarn-extra-implicit",
@@ -56,7 +56,7 @@ object BuildHelper {
           "-Ywarn-nullary-override",
           "-Ywarn-nullary-unit",
         ) ++ std2xOptions ++ optimizerOptions
-      case Some((2, 11)) =>
+      case Some(2, 11) =>
         Seq(
           "-Ypartial-unification",
           "-Yno-adapted-args",
