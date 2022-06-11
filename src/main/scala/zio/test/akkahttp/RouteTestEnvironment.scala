@@ -30,7 +30,7 @@ object RouteTestEnvironment {
     }
 
   lazy val testMaterializer: URLayer[ActorSystem, Materializer] =
-    ZLayer.fromFunction(SystemMaterializer(_).materializer)
+    ZLayer.fromFunction(SystemMaterializer(_: ActorSystem).materializer)
 
   type TestEnvironment = ActorSystem with Materializer with RouteTest.Config
 

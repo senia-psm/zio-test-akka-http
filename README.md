@@ -15,8 +15,8 @@ libraryDependencies += "info.senia" %% "zio-test-akka-http" % "x.x.x"
 
 The basic structure of a test built with the testkit is this (expression placeholder in all-caps):
 ```
-assertM(REQUEST ~> ROUTE) {
-  ASSERTIONS
+(REQUEST ~> ROUTE).map { res =>
+  assertTrue(res.some.path == value)
 }
 ```
 
@@ -38,11 +38,9 @@ object MySpec extends ZIOSpecDefault {
   def spec =
     suite("MySpec")(
       test("my test") {
-        assertM(Get() ~> complete(HttpResponse()))(
-          handled(
-            response(equalTo(HttpResponse()))
-          )
-        )
+        (Get() ~> complete(HttpResponse())).map { res =>
+          assertTrue(res.handled.get.response == HttpResponse())
+        }
       }
     ).provideShared(RouteTestEnvironment.environment)
 }
@@ -61,11 +59,9 @@ object MySpec extends AkkaZIOSpecDefault {
   def spec =
     suite("MySpec")(
       test("my test") {
-        assertM(Get() ~> complete(HttpResponse()))(
-          handled(
-            response(equalTo(HttpResponse()))
-          )
-        )
+        (Get() ~> complete(HttpResponse())).map { res =>
+          assertTrue(res.handled.get.response == HttpResponse())
+        }
       }
     )
 }
@@ -83,11 +79,9 @@ import zio.test.Assertion._
 import zio.test._
 import zio.test.akkahttp.assertions._
 
-assertM(Get() ~> complete(HttpResponse()))(
-  handled(
-    response(equalTo(HttpResponse()))
-  )
-)
+(Get() ~> complete(HttpResponse())).map { res =>
+  assertTrue(res.handled.get.response == HttpResponse())
+}
 ```
 
 Available request builders: `Get`,`Post`,`Put`,`Patch`,`Delete`,`Options`,`Head`.
@@ -99,12 +93,12 @@ You can use any function `HttpRequest => HttpRequest` to modify request.
 There are several common request modifications provided: `addHeader`,`mapHeaders`,`removeHeader`,`addCredentials`:
 
 ```scala
-assertM(Get() ~> addHeader("MyHeader", "value") ~> route)(???)
+Get() ~> addHeader("MyHeader", "value") ~> route
 ```
 
 You can also add header with `~>` method:
 ```scala
-assertM(Get() ~> RawHeader("MyHeader", "value") ~> route)(???)
+Get() ~> RawHeader("MyHeader", "value") ~> route
 ```
 
 ## Assertions
@@ -131,9 +125,9 @@ There are several assertions available:
 
 There should be an assertion for every [inspector from original Akka-HTTP Route TestKit](https://doc.akka.io/docs/akka-http/current/routing-dsl/testkit.html#table-of-inspectors). If you can't find an assertion for existing inspector please open an issue.
 
-Note that assertions are lazy on response fetching - you can use assertions for status code and headers even if route returns an infinite body:
+Note that assertions are eager on response fetching by default - you can't use assertions for status code and headers if route returns an infinite body.
 
-Assertions are incompatible with `assert` - use `assertM` instead.
+To avoid eager response body fetching use lazy `?~>` method instead of last `~>`:
 
 ```scala
 import akka.http.scaladsl.model.StatusCodes.OK
@@ -156,12 +150,12 @@ val route = get {
   }
 }
 
-assertM(Get() ~> route)(
-  handled(
-    status(equalTo(OK)) &&
-      header("Fancy", isSome(equalTo(pinkHeader))),
-  ),
-)
+(Get() ?~> route).map { res =>
+  assertTrue(
+    res.handled.get.status == OK,
+    res.handled.get.header("Fancy").get == pinkHeader,
+  )
+}
 ```
 
 
