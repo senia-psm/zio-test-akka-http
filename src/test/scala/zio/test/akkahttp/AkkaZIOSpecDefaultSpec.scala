@@ -12,7 +12,6 @@ import akka.stream.scaladsl.Source
 import akka.testkit.TestProbe
 import akka.util.{ByteString, Timeout}
 import zio.ZIO
-import zio.test.Assertion._
 import zio.test._
 
 import scala.concurrent.duration.DurationInt
@@ -21,27 +20,26 @@ object AkkaZIOSpecDefaultSpec extends AkkaZIOSpecDefault {
   def spec =
     suite("ZioRouteTestSpec")(
       test("the most simple and direct route test") {
-        assertM(Get() ~> complete(HttpResponse()))(
-          handled(
-            response(equalTo(HttpResponse())),
-          ),
-        )
+        (Get() ~> complete(HttpResponse())).map { res =>
+          assertTrue(res.handled.get.response == HttpResponse())
+        }
       },
       test("a test using a directive and some checks") {
         val pinkHeader = RawHeader("Fancy", "pink")
+
         val result = Get() ~> addHeader(pinkHeader) ~> {
           respondWithHeader(pinkHeader) {
             complete("abc")
           }
         }
 
-        assertM(result)(
-          handled(
-            status(equalTo(OK)) &&
-              responseEntity(equalTo(HttpEntity(ContentTypes.`text/plain(UTF-8)`, "abc"))) &&
-              header("Fancy", isSome(equalTo(pinkHeader))),
-          ),
-        )
+        result.map { res =>
+          assertTrue(
+            res.handled.get.status == OK,
+            res.handled.get.entity == HttpEntity(ContentTypes.`text/plain(UTF-8)`, "abc"),
+            res.handled.get.header("Fancy").get == pinkHeader,
+          )
+        }
       },
       test("proper rejection collection") {
         val result = Post("/abc", "content") ~> {
@@ -49,20 +47,24 @@ object AkkaZIOSpecDefaultSpec extends AkkaZIOSpecDefault {
             complete("naah")
           }
         }
-        assertM(result)(rejected(equalTo(List(MethodRejection(GET), MethodRejection(PUT)))))
+
+        result.map { res =>
+          assertTrue(res.rejected.get == List(MethodRejection(GET), MethodRejection(PUT)))
+        }
       },
       test("separation of route execution from checking") {
         val pinkHeader = RawHeader("Fancy", "pink")
 
         case object Command
 
-        val result = for {
+        for {
           system <- ZIO.service[ActorSystem]
           service = TestProbe()(system)
           handler = TestProbe()(system)
           resultFiber <- {
             implicit def serviceRef: ActorRef = service.ref
-            implicit val askTimeout: Timeout  = 1.second
+
+            implicit val askTimeout: Timeout = 1.second
 
             Get() ~> pinkHeader ~> {
               respondWithHeader(pinkHeader) {
@@ -75,14 +77,10 @@ object AkkaZIOSpecDefaultSpec extends AkkaZIOSpecDefault {
                  handler.reply("abc")
                }
           res <- resultFiber.join
-        } yield res
-
-        assertM(result)(
-          handled(
-            status(equalTo(OK)) &&
-              responseEntity(equalTo(HttpEntity(ContentTypes.`text/plain(UTF-8)`, "abc"))) &&
-              header("Fancy", isSome(equalTo(pinkHeader))),
-          ),
+        } yield assertTrue(
+          res.handled.get.status == OK,
+          res.handled.get.entity == HttpEntity(ContentTypes.`text/plain(UTF-8)`, "abc"),
+          res.handled.get.header("Fancy").get == pinkHeader,
         )
       },
       test("internal server error") {
@@ -90,11 +88,9 @@ object AkkaZIOSpecDefaultSpec extends AkkaZIOSpecDefault {
           throw new RuntimeException("BOOM")
         }
 
-        assertM(Get() ~> route)(
-          handled(
-            status(equalTo(InternalServerError)),
-          ),
-        )
+        (Get() ~> route).map { res =>
+          assertTrue(res.handled.get.status == InternalServerError)
+        }
       },
       test("infinite response") {
         val pinkHeader = RawHeader("Fancy", "pink")
@@ -105,12 +101,12 @@ object AkkaZIOSpecDefaultSpec extends AkkaZIOSpecDefault {
           }
         }
 
-        assertM(Get() ~> route)(
-          handled(
-            status(equalTo(OK)) &&
-              header("Fancy", isSome(equalTo(pinkHeader))),
-          ),
-        )
+        (Get() ?~> route).map { res =>
+          assertTrue(
+            res.handled.get.status == OK,
+            res.handled.get.header("Fancy").get == pinkHeader,
+          )
+        }
       },
     )
 }

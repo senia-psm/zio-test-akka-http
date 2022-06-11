@@ -6,8 +6,6 @@ import akka.http.scaladsl.model.headers.`Sec-WebSocket-Protocol`
 import akka.http.scaladsl.server._
 import akka.http.scaladsl.settings.{ParserSettings, RoutingSettings}
 import akka.stream.Materializer
-import zio.test.Assertion
-import zio.test.Assertion._
 import zio.test.akkahttp.{RouteTest, RouteTestResult}
 import zio.{URIO, ZIO}
 
@@ -16,24 +14,10 @@ import scala.concurrent.ExecutionContextExecutor
 trait ExposedRouteTest {
   this: RouteTest =>
 
-  /** Asserts that the received response is a WebSocket upgrade response and the extracts the chosen subprotocol and
-    * passes it to the handler.
-    */
-  def expectWebSocketUpgradeWithProtocol(assertion: Assertion[String]): Assertion[RouteTestResult.Completed] =
-    (isWebSocketUpgrade && header[`Sec-WebSocket-Protocol`](
-      isSome(
-        hasField(
-          "protocols",
-          (_: `Sec-WebSocket-Protocol`).protocols,
-          hasSize[String](equalTo(1)) && hasFirst(assertion),
-        ),
-      ),
-    )) ?? "expectWebSocketUpgradeWithProtocol"
-
   protected def executeRequest(
       request: HttpRequest,
       route: Route,
-    ): URIO[RouteTest.Environment with ActorSystem, RouteTestResult] =
+    ): URIO[RouteTest.Environment with ActorSystem, RouteTestResult.Lazy] =
     for {
       system <- ZIO.service[ActorSystem]
       config <- ZIO.service[RouteTest.Config]
@@ -67,11 +51,24 @@ trait ExposedRouteTest {
           .fromFuture(_ => semiSealedRoute(ctx))
           .orDie
           .flatMap {
-            case RouteResult.Complete(response)   => RouteTestResult.Completed.make(response)
+            case RouteResult.Complete(response)   => RouteTestResult.LazyCompleted.make(response)
             case RouteResult.Rejected(rejections) => ZIO.succeed(RouteTestResult.Rejected(rejections))
           }
           .timeout(config.routeTestTimeout)
           .map(_.getOrElse(RouteTestResult.Timeout))
       }
     } yield res
+}
+
+object ExposedRouteTest {
+
+  /** Check that the received response is a WebSocket upgrade response and extracts the chosen subprotocol.
+    */
+  def webSocketUpgradeWithProtocol(result: RouteTestResult.Completed): Option[String] =
+    if (!result.isWebSocketUpgrade) None
+    else
+      result.header[`Sec-WebSocket-Protocol`].flatMap { h =>
+        if (h.protocols.lengthCompare(1) == 0) h.protocols.headOption
+        else None
+      }
 }
