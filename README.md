@@ -20,7 +20,7 @@ The basic structure of a test built with the testkit is this (expression placeho
 }
 ```
 
-See [RouteDefaultRunnableSpec.scala](https://github.com/senia-psm/zio-test-akka-http/blob/master/src/test/scala/zio/test/akkahttp/RouteDefaultRunnableSpec.scala) for usage examples.
+See [RouteZIOSpecDefaultSpec.scala](src/test/scala/zio/test/akkahttp/RouteZIOSpecDefaultSpec.scala) for usage examples.
 
 ## Imports
 
