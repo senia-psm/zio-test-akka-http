@@ -103,7 +103,7 @@ Get() ~> RawHeader("MyHeader", "value") ~> route
 
 ## Assertions
 
-There are several assertions available:
+There are several methods on response available:
 
 - `handled`
 - `response`
@@ -120,14 +120,18 @@ There are several assertions available:
 - `closingExtension`
 - `trailer`
 - `rejected`
-- `rejection`
 - `isWebSocketUpgrade`
+- `webSocketUpgradeProtocol`
 
-There should be an assertion for every [inspector from original Akka-HTTP Route TestKit](https://doc.akka.io/docs/akka-http/current/routing-dsl/testkit.html#table-of-inspectors). If you can't find an assertion for existing inspector please open an issue.
+There should be a method for every [inspector from original Akka-HTTP Route TestKit](https://doc.akka.io/docs/akka-http/current/routing-dsl/testkit.html#table-of-inspectors). If you can't find a method for existing inspector please open an issue.
 
-Note that assertions are eager on response fetching by default - you can't use assertions for status code and headers if route returns an infinite body.
+Note that some methods are available only on eager version of response, but not on lazy one. You can always convert lazy response to eager with `toEager` method.
 
-To avoid eager response body fetching use lazy `?~>` method instead of last `~>`:
+It's sage to call `get` on `Option` inside of `asertTrue` macros.
+
+Note that response is eager on response fetching by default - you can't use `~>` for status code and headers if route returns an infinite body.
+
+To avoid eager response body fetching use lazy `?~>` method instead of the last `~>`:
 
 ```scala
 import akka.http.scaladsl.model.StatusCodes.OK

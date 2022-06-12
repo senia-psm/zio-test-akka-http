@@ -1,5 +1,6 @@
 package zio.test.akkahttp
 
+import akka.http.expose.ExposedRouteTest
 import akka.http.scaladsl.model.headers.Upgrade
 import akka.http.scaladsl.model.{
   AttributeKey, ContentType, HttpCharset, HttpEntity, HttpHeader, HttpProtocol, HttpResponse, MediaType, ResponseEntity,
@@ -65,6 +66,10 @@ object RouteTestResult {
     def isWebSocketUpgrade: Boolean =
       status ==
         StatusCodes.SwitchingProtocols && header[Upgrade].exists(_.hasWebSocket)
+
+    /** Check that the received response is a WebSocket upgrade response and extracts the chosen subprotocol.
+      */
+    def webSocketUpgradeProtocol: Option[String] = ExposedRouteTest.webSocketUpgradeWithProtocol(this)
   }
 
   final class LazyCompleted(
