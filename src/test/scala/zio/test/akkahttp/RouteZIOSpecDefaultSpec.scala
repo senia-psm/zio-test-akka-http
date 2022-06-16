@@ -11,21 +11,22 @@ import akka.pattern.ask
 import akka.stream.scaladsl.Source
 import akka.testkit.TestProbe
 import akka.util.{ByteString, Timeout}
-import zio.ZIO
+import zio._
+import zio.blocking.effectBlocking
 import zio.test._
 import zio.test.akkahttp.assertions._
 
 import scala.concurrent.duration.DurationInt
 
-object RouteZIOSpecDefaultSpec extends ZIOSpecDefault {
+object RouteZIOSpecDefaultSpec extends DefaultRunnableSpec {
   def spec =
     suite("RouteZIOSpecDefaultSpec")(
-      test("the most simple and direct route test") {
+      testM("the most simple and direct route test") {
         (Get() ~> complete(HttpResponse())).map { res =>
           assertTrue(res.handled.get.response == HttpResponse())
         }
       },
-      test("a test using a directive and some checks") {
+      testM("a test using a directive and some checks") {
         val pinkHeader = RawHeader("Fancy", "pink")
 
         val result = Get() ~> addHeader(pinkHeader) ~> {
@@ -42,7 +43,7 @@ object RouteZIOSpecDefaultSpec extends ZIOSpecDefault {
           )
         }
       },
-      test("proper rejection collection") {
+      testM("proper rejection collection") {
         val result = Post("/abc", "content") ~> {
           (get | put) {
             complete("naah")
@@ -53,7 +54,7 @@ object RouteZIOSpecDefaultSpec extends ZIOSpecDefault {
           assertTrue(res.rejected.get == List(MethodRejection(GET), MethodRejection(PUT)))
         }
       },
-      test("separation of route execution from checking") {
+      testM("separation of route execution from checking") {
         val pinkHeader = RawHeader("Fancy", "pink")
 
         case object Command
@@ -73,7 +74,7 @@ object RouteZIOSpecDefaultSpec extends ZIOSpecDefault {
               }
             }
           }.fork
-          _ <- ZIO.attemptBlocking {
+          _ <- effectBlocking {
                  handler.expectMsg(Command)
                  handler.reply("abc")
                }
@@ -84,7 +85,7 @@ object RouteZIOSpecDefaultSpec extends ZIOSpecDefault {
           res.handled.get.header("Fancy").get == pinkHeader,
         )
       },
-      test("internal server error") {
+      testM("internal server error") {
         val route = get {
           throw new RuntimeException("BOOM")
         }
@@ -93,7 +94,7 @@ object RouteZIOSpecDefaultSpec extends ZIOSpecDefault {
           assertTrue(res.handled.get.status == InternalServerError)
         }
       },
-      test("infinite response") {
+      testM("infinite response") {
         val pinkHeader = RawHeader("Fancy", "pink")
 
         val route = get {
@@ -109,5 +110,5 @@ object RouteZIOSpecDefaultSpec extends ZIOSpecDefault {
           )
         }
       },
-    ).provideShared(RouteTestEnvironment.environment)
+    ).provideCustomLayerShared(RouteTestEnvironment.environment)
 }

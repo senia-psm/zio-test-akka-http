@@ -101,7 +101,7 @@ object RouteTestResult {
 
     private def awaitAllElements[T](data: Source[T, _]) =
       for {
-        timeout <- ZIO.serviceWith[RouteTest.Config](_.timeout)
+        timeout <- ZIO.service[RouteTest.Config].map(_.timeout)
         mat     <- ZIO.service[Materializer]
         res <- ZIO
                  .fromFuture(_ => data.limit(100000).runWith(Sink.seq)(mat))
@@ -136,12 +136,12 @@ object RouteTestResult {
       for {
         environment  <- ZIO.environment[Environment]
         freshEntityR <- freshEntityEff(response)
-        freshEntity = freshEntityR.provideEnvironment(environment)
+        freshEntity = freshEntityR.provide(environment)
       } yield new LazyCompleted(
         response,
         freshEntity,
         freshEntity.map(response.withEntity),
-        freshEntity.flatMap(getChunks).provideEnvironment(environment),
+        freshEntity.flatMap(getChunks).provide(environment),
       )(environment.get[Materializer])
   }
 

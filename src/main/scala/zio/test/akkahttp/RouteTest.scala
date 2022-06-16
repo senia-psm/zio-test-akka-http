@@ -7,6 +7,8 @@ import akka.http.scaladsl.model.headers.Host
 import akka.http.scaladsl.server.{RequestContext, RouteResult}
 import akka.stream.Materializer
 import zio._
+import zio.clock.Clock
+import zio.duration._
 import zio.test.akkahttp.RouteTest.Environment
 
 import scala.concurrent.Future
@@ -24,27 +26,35 @@ trait RouteTest extends ExposedRouteTest with MarshallingTestUtils with RequestB
   }
 
   implicit class WithRoute(request: HttpRequest) {
-    def ?~>(route: RequestContext => Future[RouteResult]): URIO[Environment with ActorSystem, RouteTestResult.Lazy] =
-      executeRequest(request, route)
+    def ?~>(
+        route: RequestContext => Future[RouteResult],
+      ): URIO[Environment with Has[ActorSystem], RouteTestResult.Lazy] = executeRequest(request, route)
 
-    def ~>(route: RequestContext => Future[RouteResult]): URIO[Environment with ActorSystem, RouteTestResult.Eager] =
-      executeRequest(request, route).flatMap(_.toEager.catchAll(_ => ZIO.succeed(RouteTestResult.Timeout)))
+    def ~>(
+        route: RequestContext => Future[RouteResult],
+      ): URIO[Environment with Has[ActorSystem], RouteTestResult.Eager] =
+      executeRequest(request, route).flatMap(
+        _.toEager.catchAll[Any, Nothing, RouteTestResult.Eager](_ => ZIO.succeed(RouteTestResult.Timeout)),
+      )
   }
 
   implicit class WithRouteM[R, E](request: ZIO[R, E, HttpRequest]) {
     def ?~>(
         route: RequestContext => Future[RouteResult],
-      ): ZIO[Environment with ActorSystem with R, E, RouteTestResult.Lazy] = request.flatMap(executeRequest(_, route))
+      ): ZIO[Environment with Has[ActorSystem] with R, E, RouteTestResult.Lazy] =
+      request.flatMap(executeRequest(_, route))
 
     def ~>(
         route: RequestContext => Future[RouteResult],
-      ): ZIO[Environment with ActorSystem with R, E, RouteTestResult.Eager] =
-      request.flatMap(executeRequest(_, route)).flatMap(_.toEager.catchAll(_ => ZIO.succeed(RouteTestResult.Timeout)))
+      ): ZIO[Environment with Has[ActorSystem] with R, E, RouteTestResult.Eager] =
+      request
+        .flatMap(executeRequest(_, route))
+        .flatMap(_.toEager.catchAll[Any, Nothing, RouteTestResult.Eager](_ => ZIO.succeed(RouteTestResult.Timeout)))
   }
 }
 
 object RouteTest {
-  type Environment = Materializer with RouteTest.Config
+  type Environment = Has[Materializer] with Has[RouteTest.Config] with Clock
 
   case class DefaultHostInfo(host: Host, securedConnection: Boolean)
 
@@ -54,5 +64,5 @@ object RouteTest {
       routeTestTimeout: Duration = 1.second,
       defaultHost: DefaultHostInfo = DefaultHostInfo(Host("example.com"), securedConnection = false))
 
-  val testConfig: ULayer[RouteTest.Config] = ZLayer.succeed(Config())
+  val testConfig: ULayer[Has[RouteTest.Config]] = ZLayer.succeed(Config())
 }

@@ -5,6 +5,7 @@ import akka.http.scaladsl.model.HttpMethods._
 import akka.http.scaladsl.model._
 import akka.http.scaladsl.model.headers.HttpCredentials
 import zio._
+import zio.clock.Clock
 
 import scala.collection.immutable
 import scala.reflect.ClassTag
@@ -12,7 +13,7 @@ import scala.reflect.ClassTag
 trait RequestBuilding {
   type RequestTransformer = HttpRequest => HttpRequest
 
-  type EIO[+T] = RIO[RouteTest.Config, T]
+  type EIO[+T] = RIO[Has[RouteTest.Config] with Clock, T]
 
   class RequestBuilder(val method: HttpMethod) {
     def apply(): HttpRequest = apply("/")
@@ -29,7 +30,7 @@ trait RequestBuilding {
       apply(Uri(uri), content)
 
     def apply[T](uri: Uri, content: T)(implicit m: ToEntityMarshaller[T]): EIO[HttpRequest] =
-      ZIO.serviceWith[RouteTest.Config](_.marshallingTimeout).flatMap { timeout =>
+      ZIO.service[RouteTest.Config].map(_.marshallingTimeout).flatMap { timeout =>
         ZIO
           .fromFuture(implicit ec => Marshal(content).to[RequestEntity])
           .timeoutFail(new RuntimeException(s"Failed to marshal request entity within $timeout"))(timeout)
