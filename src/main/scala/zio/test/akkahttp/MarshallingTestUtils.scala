@@ -10,6 +10,8 @@ import akka.http.scaladsl.model.{HttpEntity, HttpRequest, HttpResponse, MediaRan
 import akka.http.scaladsl.unmarshalling.{FromEntityUnmarshaller, Unmarshal}
 import akka.stream.Materializer
 import zio._
+import zio.clock.Clock
+import zio.duration._
 import zio.test.akkahttp.RouteTest.Environment
 
 import java.util.concurrent.TimeUnit
@@ -21,7 +23,7 @@ trait MarshallingTestUtils {
   private def fromFutureWithMarshalingTimeout[A](
       eff: ExecutionContext => Future[A],
       factor: Double = 1,
-    ): ZIO[RouteTest.Config, Throwable, A] =
+    ): ZIO[Has[RouteTest.Config] with Clock, Throwable, A] =
     for {
       config <- ZIO.service[RouteTest.Config]
       marshallingTimeout = config.marshallingTimeout
@@ -50,13 +52,13 @@ trait MarshallingTestUtils {
   def marshalToResponseForRequestAccepting[T: ToResponseMarshaller](
       value: T,
       mediaRanges: MediaRange*,
-    ): RIO[RouteTest.Config, HttpResponse] =
+    ): RIO[Has[RouteTest.Config] with Clock, HttpResponse] =
     marshalToResponse(value, HttpRequest(headers = Accept(mediaRanges.toList) :: Nil))
 
   def marshalToResponse[T: ToResponseMarshaller](
       value: T,
       request: HttpRequest = HttpRequest(),
-    ): RIO[RouteTest.Config, HttpResponse] =
+    ): RIO[Has[RouteTest.Config] with Clock, HttpResponse] =
     fromFutureWithMarshalingTimeout(implicit ec => Marshal(value).toResponseFor(request))
 
   def unmarshal[T: FromEntityUnmarshaller](entity: HttpEntity): RIO[Environment, T] =

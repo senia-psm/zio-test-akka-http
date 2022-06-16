@@ -7,7 +7,7 @@ import akka.http.scaladsl.server._
 import akka.http.scaladsl.settings.{ParserSettings, RoutingSettings}
 import akka.stream.Materializer
 import zio.test.akkahttp.{RouteTest, RouteTestResult}
-import zio.{URIO, ZIO}
+import zio._
 
 import scala.concurrent.ExecutionContextExecutor
 
@@ -17,7 +17,7 @@ trait ExposedRouteTest {
   protected def executeRequest(
       request: HttpRequest,
       route: Route,
-    ): URIO[RouteTest.Environment with ActorSystem, RouteTestResult.Lazy] =
+    ): URIO[RouteTest.Environment with Has[ActorSystem], RouteTestResult.Lazy] =
     for {
       system <- ZIO.service[ActorSystem]
       config <- ZIO.service[RouteTest.Config]

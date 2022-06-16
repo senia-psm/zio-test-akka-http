@@ -6,13 +6,12 @@ import com.typesafe.config.{Config, ConfigFactory}
 import zio._
 
 object RouteTestEnvironment {
-  lazy val testSystemFromConfig: URLayer[Config, ActorSystem] = ZLayer.scoped {
-    ZIO.acquireRelease(ZIO.serviceWith[Config](conf => ActorSystem(actorSystemNameFrom(getClass), conf))) { sys =>
-      ZIO.fromFuture(_ => sys.terminate()).orDie
-    }
-  }
+  lazy val testSystemFromConfig: URLayer[Has[Config], Has[ActorSystem]] =
+    ZLayer.fromAcquireRelease(ZIO.service[Config].map(conf => ActorSystem(actorSystemNameFrom(getClass), conf)))(sys =>
+      ZIO.fromFuture(_ => sys.terminate()).orDie,
+    )
 
-  lazy val testSystem: ULayer[ActorSystem] = testConfig >>> testSystemFromConfig
+  lazy val testSystem: ULayer[Has[ActorSystem]] = testConfig >>> testSystemFromConfig
 
   private def actorSystemNameFrom(clazz: Class[_]) =
     clazz.getName
@@ -22,18 +21,18 @@ object RouteTestEnvironment {
 
   def testConfigSource: String = ""
 
-  lazy val testConfig: ULayer[Config] =
+  lazy val testConfig: ULayer[Has[Config]] =
     ZLayer.succeed {
       val source = testConfigSource
       val config = if (source.isEmpty) ConfigFactory.empty() else ConfigFactory.parseString(source)
       config.withFallback(ConfigFactory.load())
     }
 
-  lazy val testMaterializer: URLayer[ActorSystem, Materializer] =
-    ZLayer.fromFunction(SystemMaterializer(_: ActorSystem).materializer)
+  lazy val testMaterializer: URLayer[Has[ActorSystem], Has[Materializer]] =
+    ZLayer.fromService(SystemMaterializer(_: ActorSystem).materializer)
 
-  type TestEnvironment = ActorSystem with Materializer with RouteTest.Config
+  type TestEnvironment = Has[ActorSystem] with Has[Materializer] with Has[RouteTest.Config]
 
   lazy val environment: ULayer[TestEnvironment] =
-    testSystem >>> (ZLayer.environment[ActorSystem] ++ testMaterializer) ++ RouteTest.testConfig
+    testSystem >>> (ZLayer.requires[Has[ActorSystem]] ++ testMaterializer) ++ RouteTest.testConfig
 }
