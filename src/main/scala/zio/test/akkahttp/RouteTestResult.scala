@@ -10,6 +10,7 @@ import akka.http.scaladsl.server.Rejection
 import akka.http.scaladsl.unmarshalling.{FromEntityUnmarshaller, FromResponseUnmarshaller, Unmarshal}
 import akka.stream.Materializer
 import akka.stream.scaladsl.{Sink, Source}
+import zio.Unsafe.unsafeCompat
 import zio._
 import zio.test.akkahttp.RouteTest.Environment
 import zio.test.akkahttp.RouteTestResult.Completed
@@ -159,11 +160,15 @@ object RouteTestResult {
 
     def entityAs[T : FromEntityUnmarshaller : ClassTag]: Either[Throwable, T] =
       // The entry is already in memory. Run here is not so bad.
-      runtime.unsafeRun(ZIO.fromFuture(implicit ec => Unmarshal(entity).to[T]).either)
+      unsafeCompat { implicit u =>
+        runtime.unsafe.run(ZIO.fromFuture(implicit ec => Unmarshal(entity).to[T]).either).getOrThrow()
+      }
 
     def responseAs[T : FromResponseUnmarshaller : ClassTag]: Either[Throwable, T] =
       // The response is already in memory. Run here is not so bad.
-      runtime.unsafeRun(ZIO.fromFuture(implicit ec => Unmarshal(response).to[T]).either)
+      unsafeCompat { implicit u =>
+        runtime.unsafe.run(ZIO.fromFuture(implicit ec => Unmarshal(response).to[T]).either).getOrThrow()
+      }
 
     def contentType: ContentType = entity.contentType
 
