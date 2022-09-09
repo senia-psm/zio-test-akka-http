@@ -62,16 +62,16 @@ object AkkaZIOSpecDefaultSpec extends AkkaZIOSpecDefault {
           service = TestProbe()(system)
           handler = TestProbe()(system)
           resultFiber <- {
-                           implicit def serviceRef: ActorRef = service.ref
+            implicit def serviceRef: ActorRef = service.ref
 
-                           implicit val askTimeout: Timeout = 1.second
+            implicit val askTimeout: Timeout = 1.second
 
-                           Get() ~> pinkHeader ~> {
-                             respondWithHeader(pinkHeader) {
-                               complete(handler.ref.ask(Command).mapTo[String])
-                             }
-                           }
-                         }.fork
+            Get() ~> pinkHeader ~> {
+              respondWithHeader(pinkHeader) {
+                complete(handler.ref.ask(Command).mapTo[String])
+              }
+            }
+          }.fork
           _ <- ZIO.attemptBlocking {
                  handler.expectMsg(Command)
                  handler.reply("abc")
