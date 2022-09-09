@@ -29,7 +29,7 @@ addCommandAlias("check", "all scalafmtSbtCheck scalafmtCheck test:scalafmtCheck"
 
 lazy val zioVersion      = "2.0.2"
 lazy val akkaVersion     = "2.6.19"
-lazy val akkaHttpVersion = "10.2.10"
+lazy val akkaHttpVersion = "10.2.9"
 
 lazy val zioTestAkkaHttp =
   Project("zio-test-akka-http", file("."))
