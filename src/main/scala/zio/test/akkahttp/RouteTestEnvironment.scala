@@ -12,8 +12,6 @@ object RouteTestEnvironment {
     }
   }
 
-  lazy val testSystem: ULayer[ActorSystem] = testConfig >>> testSystemFromConfig
-
   private def actorSystemNameFrom(clazz: Class[_]) =
     clazz.getName
       .replace('.', '-')
@@ -34,6 +32,15 @@ object RouteTestEnvironment {
 
   type TestEnvironment = ActorSystem with Materializer with RouteTest.Config
 
-  lazy val environment: ULayer[TestEnvironment] =
-    testSystem >>> (ZLayer.environment[ActorSystem] ++ testMaterializer) ++ RouteTest.testConfig
+  lazy val environmentFromConfig: URLayer[Config, TestEnvironment] =
+    ZLayer.makeSome[Config, TestEnvironment](
+      testSystemFromConfig,
+      testMaterializer,
+      RouteTest.testConfig,
+    )
+
+  lazy val environment: ULayer[TestEnvironment] = ZLayer.make[TestEnvironment](
+    testConfig,
+    environmentFromConfig,
+  )
 }
