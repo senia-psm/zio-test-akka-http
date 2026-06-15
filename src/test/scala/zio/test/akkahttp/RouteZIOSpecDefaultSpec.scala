@@ -28,11 +28,10 @@ object RouteZIOSpecDefaultSpec extends ZIOSpecDefault {
       test("a test using a directive and some checks") {
         val pinkHeader = RawHeader("Fancy", "pink")
 
-        val result = Get() ~> addHeader(pinkHeader) ~> {
+        val result = Get() ~> addHeader(pinkHeader) ~>
           respondWithHeader(pinkHeader) {
             complete("abc")
           }
-        }
 
         result.map { res =>
           assertTrue(
@@ -43,11 +42,10 @@ object RouteZIOSpecDefaultSpec extends ZIOSpecDefault {
         }
       },
       test("proper rejection collection") {
-        val result = Post("/abc", "content") ~> {
+        val result = Post("/abc", "content") ~>
           (get | put) {
             complete("naah")
           }
-        }
 
         result.map { res =>
           assertTrue(res.rejected.get == List(MethodRejection(GET), MethodRejection(PUT)))
@@ -67,10 +65,9 @@ object RouteZIOSpecDefaultSpec extends ZIOSpecDefault {
 
                            implicit val askTimeout: Timeout = 1.second
 
-                           Get() ~> pinkHeader ~> {
-                             respondWithHeader(pinkHeader) {
-                               complete(handler.ref.ask(Command).mapTo[String])
-                             }
+                           Get() ~> pinkHeader ~>
+                           respondWithHeader(pinkHeader) {
+                             complete(handler.ref.ask(Command).mapTo[String])
                            }
                          }.fork
           _ <- ZIO.attemptBlocking {
