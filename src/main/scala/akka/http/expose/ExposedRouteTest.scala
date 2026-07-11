@@ -22,7 +22,7 @@ trait ExposedRouteTest {
       system <- ZIO.service[ActorSystem]
       config <- ZIO.service[RouteTest.Config]
       mat    <- ZIO.service[Materializer]
-      res <- {
+      res    <- {
         implicit val actorSystem: ActorSystem                   = system
         implicit val executionContext: ExecutionContextExecutor = system.classicSystem.dispatcher
         implicit val materializer: Materializer                 = mat
