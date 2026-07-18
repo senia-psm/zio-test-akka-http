@@ -104,7 +104,7 @@ object RouteTestResult {
       for {
         timeout <- ZIO.serviceWith[RouteTest.Config](_.timeout)
         mat     <- ZIO.service[Materializer]
-        res <- ZIO
+        res     <- ZIO
                  .fromFuture(_ => data.limit(100000).runWith(Sink.seq)(mat))
                  .orDie
                  .timeoutFail(TimeoutError)(timeout)
