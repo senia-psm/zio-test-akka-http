@@ -31,7 +31,7 @@ lazy val zioVersion      = "2.1.26"
 lazy val akkaVersion     = "2.6.20"
 lazy val akkaHttpVersion = "10.2.10"
 
-lazy val zioTestAkkaHttp =
+lazy val root =
   Project("zio-test-akka-http", file("."))
     .settings(stdSettings)
     .settings(
