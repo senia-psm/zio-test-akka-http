@@ -7,8 +7,9 @@ jobs:
   publish:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@v4
         with:
+          fetch-depth: 0
           fetch-tags: true
       - name: Setup JDK
         uses: actions/setup-java@v5
@@ -19,6 +20,7 @@ jobs:
       - uses: sbt/setup-sbt@v1
       - run: sbt ci-release
         env:
+          CI_RELEASE: "+publishSigned"
           PGP_PASSPHRASE: ${{ secrets.PGP_PASSPHRASE }}
           PGP_SECRET: ${{ secrets.PGP_SECRET }}
           SONATYPE_PASSWORD: ${{ secrets.SONATYPE_PASSWORD }}
