@@ -1,8 +1,8 @@
 # zio-test-akka-http
 
-|  CI | Release | Issues | Snapshot |
-| --- | --- | --- | --- |
-| [![Build Status][Badge-Actions]][Link-Actions] | [![Release Artifacts][Badge-SonatypeReleases]][Link-SonatypeReleases] | [![Average time to resolve an issue][Badge-IsItMaintained]][Link-IsItMaintained] | [![Snapshot Artifacts][Badge-SonatypeSnapshots]][Link-SonatypeSnapshots] |
+|  CI | Release |
+| --- | --- |
+| [![Build Status][Badge-Actions]][Link-Actions] | [![Release Artifacts][Badge-SonatypeReleases]][Link-SonatypeReleases] |
 
 
 `Akka-HTTP` route TestKit for `zio-test`
@@ -164,12 +164,8 @@ val route = get {
 
 
 
-[Badge-Actions]: https://github.com/senia-psm/zio-test-akka-http/workflows/Scala%20CI/badge.svg?branch=master
-[Badge-SonatypeReleases]: https://img.shields.io/nexus/r/https/oss.sonatype.org/info.senia/zio-test-akka-http_2.13.svg "Sonatype Releases"
-[Badge-SonatypeSnapshots]: https://img.shields.io/nexus/s/https/oss.sonatype.org/info.senia/zio-test-akka-http_2.13.svg "Sonatype Snapshots"
-[Badge-IsItMaintained]: http://isitmaintained.com/badge/resolution/senia-psm/zio-test-akka-http.svg "Average time to resolve an issue"
+[Badge-Actions]: https://github.com/senia-psm/zio-test-akka-http/actions/workflows/scala.yml/badge.svg?branch=master
+[Badge-SonatypeReleases]: https://img.shields.io/maven-central/v/info.senia/zio-test-akka-http_2.13.svg "Maven Central Releases"
 
-[Link-Actions]: https://github.com/senia-psm/zio-test-akka-http/actions?query=workflow%3A%22Scala+CI%22+branch%3Amaster
-[Link-SonatypeReleases]: https://oss.sonatype.org/content/repositories/releases/info/senia/zio-test-akka-http_2.13/ "Sonatype Releases"
-[Link-SonatypeSnapshots]: https://oss.sonatype.org/content/repositories/snapshots/info/senia/zio-test-akka-http_2.13/ "Sonatype Snapshots"
-[Link-IsItMaintained]: http://isitmaintained.com/project/senia-psm/zio-test-akka-http "Average time to resolve an issue"
+[Link-Actions]: https://github.com/senia-psm/zio-test-akka-http/actions
+[Link-SonatypeReleases]: https://central.sonatype.com/artifact/info.senia/zio-test-akka-http_2.13 "Maven Central Releases"
