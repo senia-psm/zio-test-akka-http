@@ -5,7 +5,7 @@ inThisBuild(
     organization := "info.senia",
     homepage     := Some(url("https://github.com/senia-psm/zio-test-akka-http")),
     licenses     := List("Apache-2.0" -> url("http://www.apache.org/licenses/LICENSE-2.0")),
-    developers := List(
+    developers   := List(
       Developer(
         "senia",
         "Simon Popugaev",
