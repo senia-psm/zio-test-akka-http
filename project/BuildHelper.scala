@@ -1,9 +1,7 @@
 import sbt._
 import Keys._
 
-import explicitdeps.ExplicitDepsPlugin.autoImport._
-import sbtbuildinfo._
-import BuildInfoKeys._
+import sbtbuildinfo.BuildInfoPlugin.autoImport.{given, *}
 
 object BuildHelper {
 
@@ -39,6 +37,12 @@ object BuildHelper {
 
   def extraOptions(scalaVersion: String) =
     CrossVersion.partialVersion(scalaVersion) match {
+      case Some((3, _)) =>
+        Seq(
+          "-Wunused:imports",
+          "-Wunused:all",
+          "-Xlint:all",
+        )
       case Some((2, 13)) =>
         std2xOptions ++ optimizerOptions
       case Some((2, 12)) =>
@@ -78,6 +82,5 @@ object BuildHelper {
     Test / parallelExecution := true,
     incOptions ~= (_.withLogRecompileOnMacro(false)),
     autoAPIMappings := true,
-    unusedCompileDependenciesFilter -= moduleFilter("org.scala-js", "scalajs-library"),
   )
 }
