@@ -3,27 +3,34 @@ import BuildHelper._
 inThisBuild(
   List(
     organization := "info.senia",
-    homepage     := Some(url("https://github.com/senia-psm/zio-test-akka-http")),
-    licenses     := List("Apache-2.0" -> url("http://www.apache.org/licenses/LICENSE-2.0")),
+    homepage     := Some(uri("https://github.com/senia-psm/zio-test-akka-http")),
+    licenses     := List(License.Apache2),
     developers   := List(
       Developer(
         "senia",
         "Simon Popugaev",
         "seniapsm@gmail.com",
-        url("https://github.com/afsaltha://github.com/senia-psm"),
+        uri("https://github.com/afsaltha://github.com/senia-psm"),
       ),
     ),
     scmInfo := Some(
       ScmInfo(
-        url("https://github.com/senia-psm/zio-test-akka-http"),
+        uri("https://github.com/senia-psm/zio-test-akka-http"),
         "scm:git:git@github.com:senia-psm/zio-test-akka-http.git",
       ),
     ),
+    pomIncludeRepository := { _ => false },
+    publishMavenStyle    := true,
+    publishTo            := {
+      val centralSnapshots = "https://central.sonatype.com/repository/maven-snapshots/"
+      if version.value.endsWith("-SNAPSHOT") then Some("central-snapshots" at centralSnapshots)
+      else localStaging.value
+    },
   ),
 )
 
-addCommandAlias("fmt", "all scalafmtSbt scalafmt test:scalafmt")
-addCommandAlias("check", "all scalafmtSbtCheck scalafmtCheck test:scalafmtCheck")
+addCommandAlias("fmt", ";scalafmtAll;scalafmtSbt")
+addCommandAlias("check", ";scalafmtCheckAll;scalafmtSbtCheck")
 
 lazy val zioVersion      = "2.1.26"
 lazy val akkaVersion     = "2.6.20"
