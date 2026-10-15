@@ -32,7 +32,7 @@ inThisBuild(
 addCommandAlias("fmt", ";scalafmtAll;scalafmtSbt")
 addCommandAlias("check", ";scalafmtCheckAll;scalafmtSbtCheck")
 
-lazy val zioVersion      = "2.1.26"
+lazy val zioVersion      = "2.1.27"
 lazy val akkaVersion     = "2.6.20"
 lazy val akkaHttpVersion = "10.2.10"
 
